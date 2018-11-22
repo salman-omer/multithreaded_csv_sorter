@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall
 
-TARGET = scannerCSVsorter
+TARGET = multiThreadSorter_thread
 TARGET2 = mergesort
 RM = rm
 

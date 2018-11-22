@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "scannerCSVsorter.h"
+#include "multiThreadSorter_thread.h"
 #include <dirent.h>
 #include <sys/wait.h>
 
@@ -84,6 +84,72 @@ int printMoviesAsCsv(movieLine* head, int numColumns, char** columnNames, char* 
 
 	fclose(fp);
 	return 0;
+}
+
+
+// returns string of csv line cosntructed from movie line object as per the project specifications
+char* constructCSVLine(movieLine* m){
+	char string[2000];
+	/*
+	char* color;
+	char* director_name;
+	int num_critic_for_reviews;
+	int duration;
+	int director_facebook_likes;
+	int actor_3_facebook_likes;
+	char* actor_2_name;
+	int actor_1_facebook_likes;
+	int gross;
+	char* genres;
+	char* actor_1_name;
+	char* movie_title;
+	int num_voted_users;
+	int cast_total_facebook_likes;
+	char* actor_3_name;
+	int facenumber_in_poster;
+	char* plot_keywords;
+	char* movie_imdb_link;
+	int num_user_for_reviews;
+	char* language;
+	char* country;
+	char* content_rating;
+	int budget;
+	int title_year;
+	int actor_2_facebook_likes;
+	double imdb_score;
+	double aspect_ratio;
+	int movie_facebook_likes;*/
+	sprintf(string, "%s,%s,%d,%d,%d,%d,%s,%d,%d,%s,%s,%s,%d,%d,%s,%d,%s,%s,%d,%s,%s,%s,%d,%d,%d,%f,%f,%d",
+		m->color,
+		m->director_name,
+		m->num_critic_for_reviews,
+		m->duration,
+		m->director_facebook_likes,
+		m->actor_3_facebook_likes,
+		m->actor_2_name,
+		m->actor_1_facebook_likes,
+		m->gross,
+		m->genres,
+		m->actor_1_name,
+		m->movie_title,
+		m->num_voted_users,
+		m->cast_total_facebook_likes,
+		m->actor_3_name,
+		m->facenumber_in_poster,
+		m->plot_keywords,
+		m->movie_imdb_link,
+		m->num_user_for_reviews,
+		m->language,
+		m->country,
+		m->content_rating,
+		m->budget,
+		m->title_year,
+		m->actor_2_facebook_likes,
+		m->imdb_score,
+		m->aspect_ratio,
+		m->movie_facebook_likes)
+
+	return string;
 }
 
 // arg: movieline pointer
