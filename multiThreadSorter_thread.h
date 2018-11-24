@@ -43,12 +43,19 @@ typedef struct movieLine{
 	struct movieLine* next;
 } movieLine;
 
-typedef struct moveLineLL
+typedef struct movieLineLL
 {
 	movieLine* head;
 	movieLine* rear;
 	int size;
 } movieLineLL;
+
+typedef struct threadDriver
+{
+	char* filePath;
+	movieLineLL* master;
+	char* columnToSortOn;
+} threadDriverStruct;
 
 //Suggestion: prototype a mergesort function
 void mergeSort(struct movieLine** ptrHead, char *strInput, char *numInput);

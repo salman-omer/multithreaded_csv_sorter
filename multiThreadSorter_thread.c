@@ -5,12 +5,15 @@
 #include "multiThreadSorter_thread.h"
 #include <dirent.h>
 #include <sys/wait.h>
+#include <pthread.h>
 
 typedef enum { false, true } bool;
 
 const int DEBUG = 0;
 const int DEBUG2 = 0;
 const int DEBUG3 = 0;
+
+pthread_mutex_t lock;
 
 // arg: pointer to movieLine
 // ret 0 if completed
@@ -87,38 +90,35 @@ int printMoviesAsCsv(movieLine* head, int numColumns, char** columnNames, char* 
 }
 
 
+
+// threadsafe append other linked list to end of original
+int appendLinkedList(movieLineLL* original, movieLineLL *other){
+	pthread_mutex_lock(&lock); 
+  
+  	// if original is an empty linked list
+  	if(original->size == 0){
+  		original->head = other->head;
+  		original->rear = other->rear;
+  		original->size = other->size;
+  	} else {
+
+	  	original->rear->next = other->head;
+	  	original->rear = other->rear;
+	  	original->size = original->size + other->size;
+
+  	}
+    pthread_mutex_unlock(&lock); 
+
+    return 0;
+}
+
+
 // returns string of csv line cosntructed from movie line object as per the project specifications
+// args: movieline pointer m
 char* constructCSVLine(movieLine* m){
-	char string[2000];
-	/*
-	char* color;
-	char* director_name;
-	int num_critic_for_reviews;
-	int duration;
-	int director_facebook_likes;
-	int actor_3_facebook_likes;
-	char* actor_2_name;
-	int actor_1_facebook_likes;
-	int gross;
-	char* genres;
-	char* actor_1_name;
-	char* movie_title;
-	int num_voted_users;
-	int cast_total_facebook_likes;
-	char* actor_3_name;
-	int facenumber_in_poster;
-	char* plot_keywords;
-	char* movie_imdb_link;
-	int num_user_for_reviews;
-	char* language;
-	char* country;
-	char* content_rating;
-	int budget;
-	int title_year;
-	int actor_2_facebook_likes;
-	double imdb_score;
-	double aspect_ratio;
-	int movie_facebook_likes;*/
+	char *string;
+	string = malloc(sizeof(char*[2000]));
+	
 	sprintf(string, "%s,%s,%d,%d,%d,%d,%s,%d,%d,%s,%s,%s,%d,%d,%s,%d,%s,%s,%d,%s,%s,%s,%d,%d,%d,%f,%f,%d",
 		m->color,
 		m->director_name,
@@ -147,9 +147,83 @@ char* constructCSVLine(movieLine* m){
 		m->actor_2_facebook_likes,
 		m->imdb_score,
 		m->aspect_ratio,
-		m->movie_facebook_likes)
+		m->movie_facebook_likes);
 
 	return string;
+}
+
+
+
+// sort input movielineLL using mergesort on the column to sort on arg
+int sortMovieLineLL(movieLineLL* moviesLL, char* columnToSortOn){
+	if ((strcmp(columnToSortOn, "color") == 0) || (strcmp(columnToSortOn, "director_name") == 0) || (strcmp(columnToSortOn, "actor_2_name") == 0) || (strcmp(columnToSortOn, "genres") == 0) || (strcmp(columnToSortOn, "actor_1_name") == 0) || (strcmp(columnToSortOn, "movie_title") == 0) || (strcmp(columnToSortOn, "actor_3_name") == 0) || (strcmp(columnToSortOn, "plot_keywords") == 0) || (strcmp(columnToSortOn, "movie_imdb_link") == 0) || (strcmp(columnToSortOn, "language") == 0) || (strcmp(columnToSortOn, "country") == 0) || (strcmp(columnToSortOn, "content_rating") == 0))
+    {
+		mergeSort(&(moviesLL->head), columnToSortOn, NULL);
+
+    }else if ((strcmp(columnToSortOn, "num_critic_for_reviews") == 0) || (strcmp(columnToSortOn, "duration") == 0) || (strcmp(columnToSortOn, "director_facebook_likes") == 0) || (strcmp(columnToSortOn, "actor_3_facebook_likes") == 0) || (strcmp(columnToSortOn, "actor_1_facebook_likes") == 0) || (strcmp(columnToSortOn, "gross") == 0) || (strcmp(columnToSortOn, "num_voted_users") == 0) || (strcmp(columnToSortOn, "cast_total_facebook_likes") == 0) || (strcmp(columnToSortOn, "facenumber_in_poster") == 0) || (strcmp(columnToSortOn, "num_user_for_reviews") == 0) || (strcmp(columnToSortOn, "budget") == 0) || (strcmp(columnToSortOn, "title_year") == 0) || (strcmp(columnToSortOn, "actor_2_facebook_likes") == 0) || (strcmp(columnToSortOn, "imdb_score") == 0) || (strcmp(columnToSortOn, "aspect_ratio") == 0) || (strcmp(columnToSortOn, "movie_facebook_likes") == 0))
+    {
+        mergeSort(&(moviesLL->head), NULL, columnToSortOn);
+    }
+    return 1;
+}
+
+int printMoviesAsFullLineCsv(movieLineLL* moviesLL, char* filePath){
+	int i;
+
+	FILE *fp = fopen(filePath, "w");
+
+	if(fp == NULL){
+		write(2, "File not initializable\n", 24);
+		return 1;
+	}
+
+	fprintf(fp, "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\r\n",
+		"color",
+		"director_name",
+		"num_critic_for_reviews",
+		"duration",
+		"director_facebook_likes",
+		"actor_3_facebook_likes",
+		"actor_2_name",
+		"actor_1_facebook_likes",
+		"gross",
+		"genres",
+		"actor_1_name",
+		"movie_title",
+		"num_voted_users",
+		"cast_total_facebook_likes",
+		"actor_3_name",
+		"facenumber_in_poster",
+		"plot_keywords",
+		"movie_imdb_link",
+		"num_user_for_reviews",
+		"language",
+		"country",
+		"content_rating",
+		"budget",
+		"title_year",
+		"actor_2_facebook_likes",
+		"imdb_score",
+		"aspect_ratio",
+		"movie_facebook_likes");
+
+
+	movieLine* curr = moviesLL->head;
+	while(curr != NULL){
+		if(curr->next != NULL){
+			if(curr->csvLine != NULL){
+				fprintf(fp, "%s\n", constructCSVLine(curr));
+			}
+		} else {
+			if(curr->csvLine != NULL){
+				fprintf(fp, "%s", constructCSVLine(curr));
+			}
+		}
+		curr = curr->next;
+	}
+
+	fclose(fp);
+	return 0;
 }
 
 // arg: movieline pointer
@@ -430,11 +504,11 @@ char* getOutputCSVFilePath(char* originalFilePath, char* outputDir, char* column
 
 // sort CSV as per the specifications of project 0
 // args: argv from the program input, filepath to file for sorting
-// ret: 0 if success, 1 if something bad happened
-int sortCsv(char* columnToSortOn, char* filePath, char* outputDir){
+// ret: movieLinesLL created for this file (sorted)
+movieLineLL* sortCsv(char* columnToSortOn, char* filePath){
     //check if command is correct
 
-	char* outputFilePath;
+
 
 	//Check if file is already sorted
 	if(strstr(filePath, "-sorted-") != NULL){
@@ -447,7 +521,6 @@ int sortCsv(char* columnToSortOn, char* filePath, char* outputDir){
 		fprintf(stderr, "%s is NOT a csv\n", filePath);
 		return 1;
 	} else {
-		outputFilePath = getOutputCSVFilePath(filePath, outputDir, columnToSortOn);
 		if(DEBUG){ printf("%s IS a csv\n", filePath); }
 	}
 
@@ -615,14 +688,6 @@ int sortCsv(char* columnToSortOn, char* filePath, char* outputDir){
     	currIter = currIter->next;
     }
 
-    // deal with the last character
-    //currCellText[currCellTextIndex] = '\0';
-    //addFieldToMovie(cellNumber, columnNames, currMovie, currCellText);
-    //strcpy(currMovie->csvLine, individualMovieLine);
-
-    //Before sorting!
-    //printf("\n\n\n\n\nBefore Sorting!\n\n\n\n\n");
-    //printMoviesAsCsv(moviesLL->head, numColumns, columnNames);
 
     int counter = 0;
 
@@ -643,7 +708,7 @@ int sortCsv(char* columnToSortOn, char* filePath, char* outputDir){
         if (counter == 1)   //sort only if the column name actually exists
         {
             mergeSort(&(moviesLL->head), columnToSortOn, NULL);
-            printMoviesAsCsv(moviesLL->head, numColumns, columnNames, outputFilePath);
+            //printMoviesAsCsv(moviesLL->head, numColumns, columnNames, outputFilePath);
         }else
         {
             write(2, "ERROR: INPUTTED COLUMN NAME DOES NOT EXIST!\n\n", 46);
@@ -667,7 +732,7 @@ int sortCsv(char* columnToSortOn, char* filePath, char* outputDir){
         if (counter == 1)   //sort only if the column name actually exists
         {
             mergeSort(&(moviesLL->head), NULL, columnToSortOn);
-            printMoviesAsCsv(moviesLL->head, numColumns, columnNames, outputFilePath);
+            //printMoviesAsCsv(moviesLL->head, numColumns, columnNames, outputFilePath);
         }else
         {
             write(2, "ERROR: INPUTTED COLUMN NAME DOES NOT EXIST!\n\n", 46);
@@ -679,14 +744,12 @@ int sortCsv(char* columnToSortOn, char* filePath, char* outputDir){
 
     //After sorting!
     //printf("\n\n\n\n\nAfter Sorting!\n\n\n\n\n");
-
     free(columnNames);
     fclose(file);
     //printf("SUCCESS!\n\n");
 
 
-
-    return 0;
+    return moviesLL;
 }
 
 // arg: string 1 = base directory, str2 = directory to append to end
@@ -738,14 +801,26 @@ char* getBaseDirectory(char* directory){
 }
 
 // function prototype for subLevelDriver
-int subLevelDriver(char* currDir, char* outputDir, int pid, int numProcesses, char* columnToSortOn);
+int subLevelDriver(char* currDir, char* columnToSortOn, movieLineLL* master);
 
+
+// takes the input file path, creates linked list, and adds it to the master linked list
+void* fileThreadDriver(void *args){
+	threadDriverStruct* argsStruct= (threadDriverStruct*)args;
+	appendLinkedList(argsStruct->master, sortCsv(argsStruct->columnToSortOn, argsStruct->filePath));
+	return;
+}
+
+void* directoryThreadDriver(void* args){
+	threadDriverStruct* argsStruct= (threadDriverStruct*)args;
+	subLevelDriver(argsStruct->filePath, argsStruct->columnToSortOn, argsStruct->master);
+	return;
+}
 
 // function to go through all the files in currDir and call the sort on them
-// arg: curr directory to look through, output directory to put sorted files in, pid (should be 0 on input?), columnToSortOn from
-// 	program input
+// arg: curr directory to look through columnToSortOn from program input, master LL
 // ret: number of processes that came from this
-int parseFiles(char* currDir, char* outputDir, int pid, char* columnToSortOn){
+int parseFiles(char* currDir, char* columnToSortOn, movieLineLL* master){
 	DIR *dir;
   	struct dirent *entry;
   	int numProcesses = 0;
@@ -756,24 +831,42 @@ int parseFiles(char* currDir, char* outputDir, int pid, char* columnToSortOn){
 	else {
 		if(DEBUG){ puts("Files:"); }
 		while ((entry = readdir(dir)) != NULL){
+
 			// entry is a file
 			if(entry->d_type == DT_REG){
-				int stat;
+				
 				fflush(stdout);
+
+
+				pthread_t tid;
+					
+				threadDriverStruct* args = malloc(sizeof(threadDriverStruct));
+				args->filePath = fileStringAppend(currDir, entry->d_name);
+				args->master = master;
+				args->columnToSortOn = columnToSortOn;
+				pthread_create(&tid, NULL, fileThreadDriver, (void *)args);
+
+				pthread_join(tid, NULL);
+
+				/*
 				pid = fork();
+
+				//if process is the child
 				if(pid == 0){
 					char* filePath = fileStringAppend(currDir, entry->d_name);
 					if(DEBUG){ printf("%s\n", filePath); }
-					sortCsv(columnToSortOn, filePath, outputDir);
+					sortCsv(columnToSortOn, filePath);
 					free(filePath);
 					exit(1);
-				} else{
+				} 
+				// if process is the parent
+				else{
 					pid_t cpid =  waitpid(pid, &stat, 0);
 					printf("%d,", pid);
 					if(DEBUG){ printf("Child %d terminated with status: %d\n", cpid, WEXITSTATUS(stat)); }
 					numProcesses += WEXITSTATUS(stat);
 					continue;
-				}
+				}*/
 			}
 		}
 		closedir(dir);
@@ -786,7 +879,7 @@ int parseFiles(char* currDir, char* outputDir, int pid, char* columnToSortOn){
 // arg: curr directory to look through, output directory to put sorted files in, pid (should be 0 on input?), columnToSortOn from
 // 	program input
 // ret: number of processes that came from this
-int parseDirectories(char* currDir, char* outputDir, int pid, char* columnToSortOn){
+int parseDirectories(char* currDir, char* columnToSortOn, movieLineLL* master){
 	DIR *dir;
   	struct dirent *entry;
   	int numProcesses = 0;
@@ -805,9 +898,16 @@ int parseDirectories(char* currDir, char* outputDir, int pid, char* columnToSort
 				if(!(strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0 || strcmp(entry->d_name, ".git") == 0)){
 
 
-	  				int stat;
+	  				pthread_t tid;
 	  				fflush(stdout);
-					pid = fork();
+	  				threadDriverStruct* args = malloc(sizeof(threadDriverStruct));
+					args->filePath = fileStringAppend(currDir, entry->d_name);
+					args->master = master;
+					args->columnToSortOn = columnToSortOn;
+					pthread_create(&tid, NULL, directoryThreadDriver, (void *)args);
+
+					pthread_join(tid, NULL);
+					/*pid = fork();
 					if(pid == 0){
 						char* subDir = directoryStringAppend(currDir, entry->d_name);
 						numProcesses = subLevelDriver(subDir, outputDir, pid, 1, columnToSortOn);
@@ -820,7 +920,7 @@ int parseDirectories(char* currDir, char* outputDir, int pid, char* columnToSort
 						if(DEBUG){ printf("Child %d terminated with status: %d\n", cpid, WEXITSTATUS(stat)); }
 						numProcesses += WEXITSTATUS(stat);
 						continue;
-					}
+					}*/
 				}
 
 			}
@@ -837,10 +937,10 @@ int parseDirectories(char* currDir, char* outputDir, int pid, char* columnToSort
 // this is trypically called by each sub directory as well as the parent function
 // arg: current directory, output directory, pid, number of processes total, columnToSortOn from program input
 // ret: the number of processes
-int subLevelDriver(char* currDir, char* outputDir, int pid, int numProcesses, char* columnToSortOn){
-	numProcesses += parseFiles(currDir, outputDir, pid, columnToSortOn);
-  	numProcesses += parseDirectories(currDir, outputDir, pid, columnToSortOn);
-	return numProcesses;
+int subLevelDriver(char* currDir, char* columnToSortOn, movieLineLL* master){
+	parseFiles(currDir, columnToSortOn, master);
+  	parseDirectories(currDir, columnToSortOn, master);
+	return 1;
 }
 
 
@@ -852,7 +952,6 @@ int main(int argc, char *argv[]){
     	// testing if we can see all directory and file names as well as subdirectories
     	//DIR *dir;
   		//struct dirent *entry;
-  		int pid = 0;
   		int numProcesses = 1;
   		char* columnToSortOn = NULL;
   		char* currDir = "./";
@@ -902,10 +1001,25 @@ int main(int argc, char *argv[]){
   		if(DEBUG3) {printf("%d\n", __LINE__);}
   		if(DEBUG3) {printf("Curr Dir %s  output Dir %s\n", currDir, outputDir);}
 
+
+  		if (pthread_mutex_init(&lock, NULL) != 0) { 
+        	printf("\n mutex init has failed\n"); 
+        	return 1; 
+    	} 
+
+
+
+
+    	movieLineLL* master = malloc(sizeof(movieLineLL));
+   		master->size = 0;
+
   		printf("Initial PID: %d\n", getpid());
   		printf("PIDS of all child processes: ");
   		fflush(stdout);
-  		numProcesses = subLevelDriver(currDir, outputDir, pid, numProcesses, columnToSortOn);
+  		numProcesses = subLevelDriver(currDir, columnToSortOn, master);
+
+  		sortMovieLineLL(master, columnToSortOn);
+  		printMoviesAsFullLineCsv(master, outputDir);
 
 
   		printf("\b \nTotal number of processes: %d\n", numProcesses);
