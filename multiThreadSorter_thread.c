@@ -12,6 +12,8 @@ typedef enum { false, true } bool;
 const int DEBUG = 0;
 const int DEBUG2 = 0;
 const int DEBUG3 = 0;
+const int DEBUG4 = 1;
+const int DEBUG5 = 0;
 
 pthread_mutex_t lock;
 
@@ -90,7 +92,6 @@ int printMoviesAsCsv(movieLine* head, int numColumns, char** columnNames, char* 
 }
 
 
-
 // threadsafe append other linked list to end of original
 int appendLinkedList(movieLineLL* original, movieLineLL *other){
 	pthread_mutex_lock(&lock); 
@@ -101,12 +102,12 @@ int appendLinkedList(movieLineLL* original, movieLineLL *other){
   		original->rear = other->rear;
   		original->size = other->size;
   	} else {
-
 	  	original->rear->next = other->head;
 	  	original->rear = other->rear;
 	  	original->size = original->size + other->size;
-
   	}
+
+  	if(DEBUG4) { printf("Master has %d lines\n", original->size);}
     pthread_mutex_unlock(&lock); 
 
     return 0;
@@ -172,6 +173,9 @@ int printMoviesAsFullLineCsv(movieLineLL* moviesLL, char* filePath){
 
 	FILE *fp = fopen(filePath, "w");
 
+
+	if(DEBUG4){ printf("%d %s\n", __LINE__, filePath); }
+
 	if(fp == NULL){
 		write(2, "File not initializable\n", 24);
 		return 1;
@@ -208,19 +212,15 @@ int printMoviesAsFullLineCsv(movieLineLL* moviesLL, char* filePath){
 		"movie_facebook_likes");
 
 
+	int counter = 0;
 	movieLine* curr = moviesLL->head;
 	while(curr != NULL){
-		if(curr->next != NULL){
-			if(curr->csvLine != NULL){
-				fprintf(fp, "%s\n", constructCSVLine(curr));
-			}
-		} else {
-			if(curr->csvLine != NULL){
-				fprintf(fp, "%s", constructCSVLine(curr));
-			}
-		}
+		counter++;
+		fprintf(fp, "%s\n", constructCSVLine(curr));
 		curr = curr->next;
 	}
+
+	if(DEBUG4){printf("lines iterated %d\n", counter);}
 
 	fclose(fp);
 	return 0;
@@ -515,23 +515,28 @@ movieLineLL* sortCsv(char* columnToSortOn, char* filePath){
 		return 1;
 	}
 
+
 	//Check if file is a csv
 	if(isCSV(filePath) != 0){
 		if(DEBUG){ printf("%s is NOT a csv\n", filePath); }
 		fprintf(stderr, "%s is NOT a csv\n", filePath);
 		return 1;
 	} else {
-		if(DEBUG){ printf("%s IS a csv\n", filePath); }
+		if(DEBUG4){ printf("%s IS a csv\n", filePath); }
 	}
 
-
+	if(DEBUG4){ printf("%d\n", __LINE__); }
 
 	FILE* file = fopen(filePath, "r");
+
+	if(DEBUG4){ printf("%d %d %s\n", __LINE__, file, filePath); }
+
 	int fd = fileno(file);
 
-	if(DEBUG){ printf("File Descriptor: %d\n", fd); }
+	if(DEBUG4){ printf("File Descriptor: %d\n", fd); }
 	//return 0;
 
+	if(DEBUG4){ printf("%d\n", __LINE__); }
 
     char columnsLine[2000];
     char buffer;
@@ -552,6 +557,8 @@ movieLineLL* sortCsv(char* columnToSortOn, char* filePath){
         }
     }
 
+    if(DEBUG4){ printf("%d\n", __LINE__); }
+
     // now want to parse the first line so that we know the number of columns
     // number of columns = # of commas + 1
     int i;
@@ -562,6 +569,10 @@ movieLineLL* sortCsv(char* columnToSortOn, char* filePath){
         }
     }
     if(DEBUG) { printf("Number of columns is %d\n", numColumns);}
+
+
+    if(DEBUG4){ printf("%d\n", __LINE__); }
+
 
     // want to add each column header to an array of strings
     // array of strings of size numColumns, each string max size of 30, each index corresponds to that columns index
@@ -587,7 +598,7 @@ movieLineLL* sortCsv(char* columnToSortOn, char* filePath){
 
     columnNames[currColumnNum][currStringIndex - 1] = '\0';
 
-
+    if(DEBUG4){ printf("%d\n", __LINE__); }
     if(DEBUG){
         printf("Last columnName is: %s\n", columnNames[numColumns - 1]);
         if(columnNames[numColumns - 1][strlen(columnNames[numColumns - 1])] == '\n'){
@@ -609,7 +620,7 @@ movieLineLL* sortCsv(char* columnToSortOn, char* filePath){
     // to read in a row, we start at new line or EOF
 
     //make a new struct, make previous struct point to it, populate it
-
+    if(DEBUG4){ printf("%d\n", __LINE__); }
 
     char currCellText[100];
     int currCellTextIndex = 0;
@@ -666,6 +677,7 @@ movieLineLL* sortCsv(char* columnToSortOn, char* filePath){
             moviesLL->rear = newMovie;
             currMovie->next = newMovie;
             currMovie = newMovie;
+            moviesLL->size = moviesLL->size + 1;
             continue;
         }
 
@@ -676,11 +688,13 @@ movieLineLL* sortCsv(char* columnToSortOn, char* filePath){
 
     }
 
+    if(DEBUG4){ printf("%d\n", __LINE__); }
 
     movieLine* currIter = moviesLL->head;
     while(currIter->next != NULL){
     	if(hasNoFields(currIter->next) == 0){
     		moviesLL->rear = currIter;
+    		moviesLL->size = moviesLL->size - 1;
     		free(currIter->next);
     		currIter->next = NULL;
     		break;
@@ -707,7 +721,7 @@ movieLineLL* sortCsv(char* columnToSortOn, char* filePath){
 
         if (counter == 1)   //sort only if the column name actually exists
         {
-            mergeSort(&(moviesLL->head), columnToSortOn, NULL);
+            //mergeSort(&(moviesLL->head), columnToSortOn, NULL);
             //printMoviesAsCsv(moviesLL->head, numColumns, columnNames, outputFilePath);
         }else
         {
@@ -731,7 +745,7 @@ movieLineLL* sortCsv(char* columnToSortOn, char* filePath){
 
         if (counter == 1)   //sort only if the column name actually exists
         {
-            mergeSort(&(moviesLL->head), NULL, columnToSortOn);
+            //mergeSort(&(moviesLL->head), NULL, columnToSortOn);
             //printMoviesAsCsv(moviesLL->head, numColumns, columnNames, outputFilePath);
         }else
         {
@@ -741,7 +755,7 @@ movieLineLL* sortCsv(char* columnToSortOn, char* filePath){
     {
         write(2, "ERROR: INVALID COLUMN NAME!\n\n", 30);
     }
-
+    if(DEBUG4){ printf("%d\n", __LINE__); }
     //After sorting!
     //printf("\n\n\n\n\nAfter Sorting!\n\n\n\n\n");
     free(columnNames);
@@ -757,9 +771,9 @@ movieLineLL* sortCsv(char* columnToSortOn, char* filePath){
 char* directoryStringAppend(char* str1, char* str2){
 	char* ret;
 	if( (ret = malloc((strlen(str1) + strlen(str2) + 2) * sizeof(char))) ) {
-		strcat(ret, str1);
+		strcpy(ret, str1);
 		strcat(ret, str2);
-		ret[strlen(str1) + strlen(str2)] = '/';
+		ret[strlen(str1) + strlen(str2) ] = '/';
 		ret[strlen(str1) + strlen(str2) + 1] = '\0';
 	}
 	else{
@@ -773,9 +787,11 @@ char* directoryStringAppend(char* str1, char* str2){
 char* fileStringAppend(char* directory, char* fileName){
 	char* ret;
 	if( (ret = malloc((strlen(directory) + strlen(fileName) + 1) * sizeof(char))) ) {
-		strcat(ret, directory);
+		strcpy(ret, directory);
 		strcat(ret, fileName);
-		ret[strlen(directory) + strlen(fileName)] = '\0';
+		if(DEBUG5){ printf("%d %s len      %s len \n", __LINE__, directory, fileName); }
+		ret[strlen(directory) + strlen(fileName) + 1] = '\0';
+		if(DEBUG5){ printf("%d %s\n", __LINE__, ret); }
 	}
 	else{
 		ret = "failure";
@@ -807,7 +823,8 @@ int subLevelDriver(char* currDir, char* columnToSortOn, movieLineLL* master);
 // takes the input file path, creates linked list, and adds it to the master linked list
 void* fileThreadDriver(void *args){
 	threadDriverStruct* argsStruct= (threadDriverStruct*)args;
-	appendLinkedList(argsStruct->master, sortCsv(argsStruct->columnToSortOn, argsStruct->filePath));
+	movieLineLL* temp = sortCsv(argsStruct->columnToSortOn, argsStruct->filePath);
+	appendLinkedList(argsStruct->master, temp);
 	return;
 }
 
@@ -825,6 +842,8 @@ int parseFiles(char* currDir, char* columnToSortOn, movieLineLL* master){
   	struct dirent *entry;
   	int numProcesses = 0;
 
+	if(DEBUG4){ printf("%d %s\n", __LINE__, currDir); }
+  	
   	if ((dir = opendir(currDir)) == NULL){
     		perror("opendir() error");
 	}
@@ -841,13 +860,19 @@ int parseFiles(char* currDir, char* columnToSortOn, movieLineLL* master){
 				pthread_t tid;
 					
 				threadDriverStruct* args = malloc(sizeof(threadDriverStruct));
-				args->filePath = fileStringAppend(currDir, entry->d_name);
+				char* filePath = fileStringAppend(currDir, entry->d_name);
+				if(DEBUG4){ printf("CurrDir is %s for FilePath: %s for file: %s\n", currDir,filePath, entry->d_name); }
+
+
+				args->filePath = filePath;
 				args->master = master;
 				args->columnToSortOn = columnToSortOn;
 				pthread_create(&tid, NULL, fileThreadDriver, (void *)args);
 
 				pthread_join(tid, NULL);
 
+
+				free(filePath);
 				/*
 				pid = fork();
 
@@ -901,7 +926,7 @@ int parseDirectories(char* currDir, char* columnToSortOn, movieLineLL* master){
 	  				pthread_t tid;
 	  				fflush(stdout);
 	  				threadDriverStruct* args = malloc(sizeof(threadDriverStruct));
-					args->filePath = fileStringAppend(currDir, entry->d_name);
+					args->filePath = directoryStringAppend(currDir, entry->d_name);
 					args->master = master;
 					args->columnToSortOn = columnToSortOn;
 					pthread_create(&tid, NULL, directoryThreadDriver, (void *)args);
@@ -1009,6 +1034,13 @@ int main(int argc, char *argv[]){
 
 
 
+
+    	char outputFileName[150];
+
+    	strcpy(outputFileName, "AllFiles-sorted-");
+    	strcat(outputFileName, columnToSortOn);
+    	strcat(outputFileName, ".csv");
+    	outputDir = fileStringAppend(outputDir, outputFileName);
 
     	movieLineLL* master = malloc(sizeof(movieLineLL));
    		master->size = 0;
