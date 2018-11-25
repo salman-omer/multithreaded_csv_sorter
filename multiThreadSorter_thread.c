@@ -1352,6 +1352,10 @@ int main(int argc, char *argv[]){
 
   		if(DEBUG3) {printf("%d\n", __LINE__);}
 
+  		bool c = false;
+  		bool d = false;
+  		bool o = false;
+
   		int i;
   		for(i = 1; i < argc; i = i + 2){
   			if(argv[i+1][0] == '-'){
@@ -1360,14 +1364,32 @@ int main(int argc, char *argv[]){
   				return 1;
   			}
   			if(strcmp(argv[i], "-c") == 0){
+  				if(c == true){
+  					printf("FATAL ERROR: DUPLICATE TAG\n");
+  					write(2, "FATAL ERROR: DUPLICATE TAG\n", 45);
+  					return 1;
+  				}
+  				c = true;
   				columnToSortOn = malloc(sizeof(char) * (strlen(argv[i+1]) + 1));
   				strcpy(columnToSortOn, argv[i+1]);
   				if(DEBUG3){printf("%s\n", columnToSortOn);};
   			}
   			else if(strcmp(argv[i], "-d") == 0){
+  				if(d == true){
+  					printf("FATAL ERROR: DUPLICATE TAG\n");
+  					write(2, "FATAL ERROR: DUPLICATE TAG\n", 45);
+  					return 1;
+  				}
+  				d = true;
   				currDir = directoryStringAppend(currDir, argv[i+1]);
   			}
   			else if(strcmp(argv[i], "-o") == 0){
+  				if(o == true){
+  					printf("FATAL ERROR: DUPLICATE TAG\n");
+  					write(2, "FATAL ERROR: DUPLICATE TAG\n", 45);
+  					return 1;
+  				}
+  				o = true;
   				outputDir = directoryStringAppend(outputDir, argv[i+1]);
   			}
   			else {
