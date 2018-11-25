@@ -38,6 +38,8 @@ typedef struct movieLine{
 	int actor_2_facebook_likes;
 	double imdb_score;
 	double aspect_ratio;
+	char* imdb_score_string;
+	char* aspect_ratio_string;
 	int movie_facebook_likes;
 	char* csvLine;
 	struct movieLine* next;

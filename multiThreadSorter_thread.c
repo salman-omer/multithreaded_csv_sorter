@@ -217,7 +217,9 @@ int initMovieLine(movieLine* movie){
 	movie-> title_year = -1;
 	movie-> actor_2_facebook_likes = -1;
 	movie-> imdb_score = -1;
+	movie-> imdb_score_string = NULL;
 	movie-> aspect_ratio = -1;
+	movie-> aspect_ratio_string = NULL;
 	movie-> movie_facebook_likes = -1;
 	movie->next = NULL;
 	movie->csvLine = NULL;
@@ -320,8 +322,10 @@ char* removeNegativeOnes(char* str){
 char* constructCSVLine(movieLine* m){
 	char *string;
 	string = malloc(sizeof(char*[2000]));
+
+	//want to remove all zeros from the float
 	
-	sprintf(string, "%s,%s,%d,%d,%d,%d,%s,%d,%d,%s,%s,%s,%d,%d,%s,%d,%s,%s,%d,%s,%s,%s,%d,%d,%d,%f,%f,%d",
+	sprintf(string, "%s,%s,%d,%d,%d,%d,%s,%d,%d,%s,%s,%s,%d,%d,%s,%d,%s,%s,%d,%s,%s,%s,%d,%d,%d,%s,%s,%d",
 		m->color,
 		m->director_name,
 		m->num_critic_for_reviews,
@@ -347,8 +351,8 @@ char* constructCSVLine(movieLine* m){
 		m->budget,
 		m->title_year,
 		m->actor_2_facebook_likes,
-		m->imdb_score,
-		m->aspect_ratio,
+		m->imdb_score_string,
+		m->aspect_ratio_string,
 		m->movie_facebook_likes);
 
 	//if(DEBUG6){ printf("Movie title:   %s\n", m->movie_title);}
@@ -635,12 +639,16 @@ int addFieldToMovie(int columnNumber, char** columnNames, movieLine* movie, char
 	else if (strcmp(columnName, "imdb_score") == 0){
 		if(value[0] != '\0'){
 			movie->imdb_score = atof(value);
+			movie->imdb_score_string = malloc(sizeof(char) * (strlen(value) + 1));
+			strcpy(movie->imdb_score_string, value);
 		}
 		if (DEBUG) { printf("%s %f\n", "imdb_score", atof(value)); }
 	}
 	else if (strcmp(columnName, "aspect_ratio") == 0){
 		if(value[0] != '\0'){
 			movie->aspect_ratio = atof(value);
+			movie->aspect_ratio_string = malloc(sizeof(char) * (strlen(value) + 1));
+			strcpy(movie->aspect_ratio_string, value);
 		}
 		if (DEBUG) { printf("%s %f\n", "aspect_ratio", atof(value)); }
 	}
