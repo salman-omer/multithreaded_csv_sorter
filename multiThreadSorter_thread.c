@@ -12,7 +12,7 @@ typedef enum { false, true } bool;
 const int DEBUG = 0;
 const int DEBUG2 = 0;
 const int DEBUG3 = 0;
-const int DEBUG4 = 1;
+const int DEBUG4 = 0;
 const int DEBUG5 = 0;
 
 pthread_mutex_t lock;
@@ -113,6 +113,26 @@ int appendLinkedList(movieLineLL* original, movieLineLL *other){
     return 0;
 }
 
+// remove all "-1" from input string and replace with nothing
+char* removeNegativeOnes(char* str){
+	char* ret = malloc(sizeof(char) * (strlen(str) + 1));
+	int i = 0;
+	int j = 0;
+	for(i; i < strlen(str) + 1; i++){
+		if(str[i] == '\0'){
+			break;
+		}
+		if(str[i] == '-' && str[i+1] == '1'){
+			i++;
+			continue;
+		}
+
+		ret[j] = str[i];
+		j++;
+	}
+	ret[j] = '\0';
+	return ret;
+}
 
 // returns string of csv line cosntructed from movie line object as per the project specifications
 // args: movieline pointer m
@@ -216,7 +236,7 @@ int printMoviesAsFullLineCsv(movieLineLL* moviesLL, char* filePath){
 	movieLine* curr = moviesLL->head;
 	while(curr != NULL){
 		counter++;
-		fprintf(fp, "%s\n", constructCSVLine(curr));
+		fprintf(fp, "%s\n", removeNegativeOnes(constructCSVLine(curr)));
 		curr = curr->next;
 	}
 
@@ -643,9 +663,10 @@ movieLineLL* sortCsv(char* columnToSortOn, char* filePath){
     	}
         if(buffer == '"'){
             quotationMark = !quotationMark;
+            /* This is some old stuff that I am commenting out so that the quotes are stored in the strings
             individualMovieLine[movieLineCharacterIndex] = buffer;
             movieLineCharacterIndex++;
-            continue;
+            continue;*/
         }
         if (buffer == ',' && !quotationMark)
         {
