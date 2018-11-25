@@ -57,6 +57,28 @@ typedef struct threadDriver
 	char* columnToSortOn;
 } threadDriverStruct;
 
+// a dual graph and linked list node
+// nextNode is the next node in the full linked list
+typedef struct threadMetaDataNode{
+	pthread_t tid;
+	struct threadMetaDataNode* next;
+} threadMetaDataNode;
+
+// this is also a type of linked list
+// a threads LL refers to one TID
+// The linked list in that thread is all the immediate children of that TID
+// the next linked list is another TID
+// for every single thread, we make a threadsLL and populate its first children linked list
+typedef struct threadsLL
+{
+	pthread_t tid;
+	struct threadMetaDataNode* head;
+	struct threadMetaDataNode* rear;
+	struct threadsLL* next;
+	int size;
+} threadsLL;
+
+
 //Suggestion: prototype a mergesort function
 void mergeSort(struct movieLine** ptrHead, char *strInput, char *numInput);
 

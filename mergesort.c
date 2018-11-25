@@ -3,6 +3,8 @@
 #include <string.h>
 #include "multiThreadSorter_thread.h"
 
+const int DEBUG7 = 0;
+
 //this function removes the leading and trailing spaces of string type inputs
 char *trim(char *input)
 {
@@ -449,6 +451,7 @@ void split(struct movieLine* source, struct movieLine** ptrFront, struct movieLi
 //sorts the csv linked list - recursive fn
 void mergeSort(struct movieLine** ptrHead, char *strInput, char *numInput)
 {
+
     struct movieLine* head = *ptrHead;
     struct movieLine* x;
     struct movieLine* y;
@@ -457,7 +460,6 @@ void mergeSort(struct movieLine** ptrHead, char *strInput, char *numInput)
     {
         return;
     }
-
     split(head, &x, &y);
 
     mergeSort(&x, strInput, numInput);      //recursive call on mergeSort for each parts

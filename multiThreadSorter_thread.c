@@ -6,6 +6,8 @@
 #include <dirent.h>
 #include <sys/wait.h>
 #include <pthread.h>
+#include <sys/types.h>
+#include <sys/syscall.h>
 
 typedef enum { false, true } bool;
 
@@ -14,9 +16,176 @@ const int DEBUG2 = 0;
 const int DEBUG3 = 0;
 const int DEBUG4 = 0;
 const int DEBUG5 = 0;
-const int DEBUG6 = 1;
+const int DEBUG6 = 0;
+const int DEBUG8 = 0;
 
-pthread_mutex_t lock;
+pthread_mutex_t lock; 
+pthread_mutex_t lock2;
+
+
+/*
+struct threadsLL* allThreadsLL;
+
+
+
+// add input tid to threads tid list
+int addThreadsLL(pthread_t tid){
+	threadsLL* curr = allThreadsLL;
+	if(DEBUG6) { printf("%d\n", __LINE__);}
+	while(curr != NULL){
+		if(curr->tid == tid){
+			return 0;
+		}
+		if(curr->next != NULL){
+			curr = curr->next;
+		} else {
+			break;
+		}
+	}
+	if(DEBUG6) { printf("%d\n", __LINE__);}
+	threadsLL *newThreadLL = malloc(sizeof(threadsLL));
+	newThreadLL->tid = tid;
+	newThreadLL->head = NULL;
+	newThreadLL->rear = NULL;
+	newThreadLL->next = NULL;
+	curr->next = newThreadLL; 
+	if(DEBUG6) { printf("%d\n", __LINE__);}
+	return 1;
+}
+
+
+// for the parent tid, find its LL and add its immediate child to its LL
+int addImmediateChild(pthread_t parent, pthread_t child){
+	threadsLL* curr = allThreadsLL;
+	if(DEBUG6) { printf("%d\n", __LINE__);}
+	while(curr != NULL){
+		if(curr->tid == parent){
+			threadMetaDataNode* newNode = malloc(sizeof(threadMetaDataNode));
+			newNode->tid = child;
+			newNode->next = NULL;
+			if(curr->head == NULL){
+				if(DEBUG6) { printf("%d\n", __LINE__);}
+				curr->head = newNode;
+				curr->rear = newNode;
+				curr->size = 1;
+				break;
+			}
+			if(DEBUG6) { printf("%d\n", __LINE__);}
+			curr->rear->next = newNode;
+			curr->rear = newNode;
+			curr->size = curr->size + 1;
+			break;
+		}
+		curr = curr->next;
+	}
+	if(DEBUG6) { printf("%d\n", __LINE__);}
+	return 1;
+}
+
+int addThreadMetaDataNode(threadsLL* list, threadMetaDataNode* toAdd){
+	if(list->size == 0){
+		list->head = toAdd;
+		list->rear = toAdd;
+		list->size = 1;
+		return 1;
+	}
+
+	if(DEBUG8){printf("%d\n", __LINE__);}
+	if(list->rear == NULL){
+		printf("very bad!!\n");
+	}
+	list->rear->next = toAdd;
+	if(DEBUG8){printf("%d\n", __LINE__);}
+	list->rear = toAdd;
+	if(DEBUG8){printf("%d\n", __LINE__);}
+	list->size = list->size + 1;
+	if(DEBUG8){printf("%d\n", __LINE__);}
+	return 1;
+
+}
+
+int concatQueueToMaster(threadsLL* master, threadsLL* toAdd){
+	if(DEBUG8){printf("%d\n", __LINE__);}
+	master->rear->next = toAdd->head;
+	master->rear = toAdd->rear;
+	master->size = master->size + toAdd->size;
+	if(DEBUG8){printf("%d ret size %d\n", __LINE__, master->size);}
+	return 1;
+}
+
+//creates a queue for ALL the children of this parent
+threadsLL* createThreadsChildQueue(pthread_t parent){
+	threadsLL* retQueue = malloc(sizeof(threadsLL));
+	retQueue->size = 0;
+
+	if(DEBUG8){printf("%d\n", __LINE__);}
+
+	threadsLL* parentLL;
+	threadsLL* curr = allThreadsLL;
+	while(curr != NULL){
+		if(curr->tid == parent){
+			parentLL = curr;
+			break;
+		}
+		curr = curr->next;
+	}
+
+	if(DEBUG8){printf("%d\n", __LINE__);}
+
+	threadMetaDataNode* iter = parentLL->head;
+	while(iter != NULL){
+		// add iter to queue
+		threadMetaDataNode* currThread = malloc(sizeof(threadMetaDataNode));
+		if(DEBUG8){printf("%d\n", __LINE__);}
+		currThread->tid = iter->tid;
+		if(DEBUG8){printf("%d %lu\n", __LINE__, iter->tid);}
+		currThread->next = NULL;
+		addThreadMetaDataNode(retQueue, currThread);
+		if(DEBUG8){printf("%d\n", __LINE__);}
+		// then add all of its children to the queue
+		concatQueueToMaster(retQueue, createThreadsChildQueue(currThread->tid));
+		iter = iter->next;
+		if(DEBUG8){printf("%d passing up %lu\n", __LINE__, currThread->tid);}
+	}
+
+	if(DEBUG8){printf("%d\n", __LINE__);}
+	return retQueue;
+}
+
+
+pthread_t popQueue(threadsLL* queue){
+	pthread_t retVal = queue->head->tid;
+	queue->head = queue->head->next;
+	queue->size = queue->size - 1;
+	return retVal;
+}
+
+// print meta data to stdout from allThreadsLL
+int printMetaData(){
+	threadsLL* curr = allThreadsLL;
+	while(curr != NULL){
+		printf("Initial PID: %lu\n", curr->tid);
+		if(DEBUG8){printf("%d\n", __LINE__);}
+		int numThreads = 0;
+	  	printf("TIDS of all spawned threads: ");
+	  	if(DEBUG8){printf("%d\n", __LINE__);}
+	  	threadsLL* currChildQueue = createThreadsChildQueue(curr->tid);
+	  	if(DEBUG8){printf("%d\n", __LINE__);}
+	  	while(currChildQueue->size != 0){
+	  		printf("%lu,", popQueue(currChildQueue));
+	  		numThreads++;
+	  	}
+	  	// want to make a new threads linked list to act as queue for all these spawned threads
+	  	// first create that queue 
+
+	  	printf("\b \nTotal number of threads: %d\n", numThreads);
+	}
+
+	return 1;
+	
+}
+
+*/
 
 // arg: pointer to movieLine
 // ret 0 if completed
@@ -95,8 +264,14 @@ int printMoviesAsCsv(movieLine* head, int numColumns, char** columnNames, char* 
 
 // threadsafe append other linked list to end of original
 int appendLinkedList(movieLineLL* original, movieLineLL *other){
+
+  	if(other == NULL){
+  		return 1;
+  	}
+
 	pthread_mutex_lock(&lock); 
-  
+ 
+
   	// if original is an empty linked list
   	if(original->size == 0){
   		original->head = other->head;
@@ -115,6 +290,7 @@ int appendLinkedList(movieLineLL* original, movieLineLL *other){
 }
 
 // remove all "-1" from input string and replace with nothing
+// also removes all "(nulls)"
 char* removeNegativeOnes(char* str){
 	char* ret = malloc(sizeof(char) * (strlen(str) + 1));
 	int i;
@@ -125,6 +301,10 @@ char* removeNegativeOnes(char* str){
 		}
 		if(str[i] == '-' && str[i+1] == '1'){
 			i++;
+			continue;
+		}
+		if(str[i] == '(' && str[i+1] == 'n' && str[i+2] == 'u' && str[i+3] == 'l' && str[i+4] == 'l' && str[i+5] == ')'){
+			i = i + 5;
 			continue;
 		}
 
@@ -182,11 +362,21 @@ char* constructCSVLine(movieLine* m){
 int sortMovieLineLL(movieLineLL* moviesLL, char* columnToSortOn){
 	if ((strcmp(columnToSortOn, "color") == 0) || (strcmp(columnToSortOn, "director_name") == 0) || (strcmp(columnToSortOn, "actor_2_name") == 0) || (strcmp(columnToSortOn, "genres") == 0) || (strcmp(columnToSortOn, "actor_1_name") == 0) || (strcmp(columnToSortOn, "movie_title") == 0) || (strcmp(columnToSortOn, "actor_3_name") == 0) || (strcmp(columnToSortOn, "plot_keywords") == 0) || (strcmp(columnToSortOn, "movie_imdb_link") == 0) || (strcmp(columnToSortOn, "language") == 0) || (strcmp(columnToSortOn, "country") == 0) || (strcmp(columnToSortOn, "content_rating") == 0))
     {
+    	if(moviesLL == NULL){
+    		if(DEBUG6) {printf("%d\n", __LINE__);}
+    	}
+  		if(DEBUG6) {printf("%d\n", __LINE__);}
 		mergeSort(&(moviesLL->head), columnToSortOn, NULL);
+
+  		if(DEBUG6) {printf("%d\n", __LINE__);}
 
     }else if ((strcmp(columnToSortOn, "num_critic_for_reviews") == 0) || (strcmp(columnToSortOn, "duration") == 0) || (strcmp(columnToSortOn, "director_facebook_likes") == 0) || (strcmp(columnToSortOn, "actor_3_facebook_likes") == 0) || (strcmp(columnToSortOn, "actor_1_facebook_likes") == 0) || (strcmp(columnToSortOn, "gross") == 0) || (strcmp(columnToSortOn, "num_voted_users") == 0) || (strcmp(columnToSortOn, "cast_total_facebook_likes") == 0) || (strcmp(columnToSortOn, "facenumber_in_poster") == 0) || (strcmp(columnToSortOn, "num_user_for_reviews") == 0) || (strcmp(columnToSortOn, "budget") == 0) || (strcmp(columnToSortOn, "title_year") == 0) || (strcmp(columnToSortOn, "actor_2_facebook_likes") == 0) || (strcmp(columnToSortOn, "imdb_score") == 0) || (strcmp(columnToSortOn, "aspect_ratio") == 0) || (strcmp(columnToSortOn, "movie_facebook_likes") == 0))
     {
+
+  		if(DEBUG6) {printf("%d\n", __LINE__);}
         mergeSort(&(moviesLL->head), NULL, columnToSortOn);
+
+  		if(DEBUG6) {printf("%d\n", __LINE__);}
     }
     return 1;
 }
@@ -645,7 +835,7 @@ movieLineLL* sortCsv(char* columnToSortOn, char* filePath){
     //make a new struct, make previous struct point to it, populate it
     if(DEBUG4){ printf("%d\n", __LINE__); }
 
-    char currCellText[200];
+    char currCellText[3000];
     int currCellTextIndex = 0;
     int cellNumber = 0;
     if(DEBUG2){ printf("Line %d\n", __LINE__);}
@@ -700,8 +890,8 @@ movieLineLL* sortCsv(char* columnToSortOn, char* filePath){
             if(DEBUG2){printf("%s\n", individualMovieLine);}
 
             movieLine* newMovie = malloc(sizeof(movieLine));
-            initMovieLine(newMovie);
             addFieldToMovie(-1, columnNames, currMovie, individualMovieLine);
+            initMovieLine(newMovie);
             //strcpy(currMovie->csvLine, individualMovieLine);
             moviesLL->rear = newMovie;
             currMovie->next = newMovie;
@@ -846,7 +1036,7 @@ char* getBaseDirectory(char* directory){
 }
 
 // function prototype for subLevelDriver
-int subLevelDriver(char* currDir, char* columnToSortOn, movieLineLL* master);
+threadMetaDataNode* subLevelDriver(char* currDir, char* columnToSortOn, movieLineLL* master);
 
 
 // takes the input file path, creates linked list, and adds it to the master linked list
@@ -854,22 +1044,62 @@ void* fileThreadDriver(void *args){
 	threadDriverStruct* argsStruct= (threadDriverStruct*)args;
 	movieLineLL* temp = sortCsv(argsStruct->columnToSortOn, argsStruct->filePath);
 	appendLinkedList(argsStruct->master, temp);
-	return (void*) 1;
+
+	printf("Initial PID: %d\n", getpid());
+	printf("TIDS of all spawned threads: ");
+	printf("\b \nTotal number of threads: %d\n\n", 0);
+
+
+	threadMetaDataNode* fileNode = malloc(sizeof(threadMetaDataNode));
+	fileNode->tid = pthread_self();
+	fileNode->next = NULL;
+	
+	//addThreadsLL(pthread_self());
+	return (void*) fileNode;
 }
 
 void* directoryThreadDriver(void* args){
 	threadDriverStruct* argsStruct= (threadDriverStruct*)args;
-	int* ret = subLevelDriver(argsStruct->filePath, argsStruct->columnToSortOn, argsStruct->master)
-	return (void *) ret;
+	//addThreadsLL(pthread_self());
+	// sublevel driver should return the filenode list appended to the directory node list
+
+	threadMetaDataNode* ret = subLevelDriver(argsStruct->filePath, argsStruct->columnToSortOn, argsStruct->master);
+
+	threadMetaDataNode* node = malloc(sizeof(threadMetaDataNode));
+	node->tid = pthread_self();
+	node->next = ret;
+
+
+	threadMetaDataNode* curr = ret;
+
+	printf("Initial PID: %d\n", getpid());
+					if(DEBUG8){printf("%d\n", __LINE__);}
+	int numThreads = 0;
+	printf("TIDS of all spawned threads: ");
+				  	if(DEBUG8){printf("%d\n", __LINE__);}
+				  	//threadsLL* currChildQueue = createThreadsChildQueue(curr->tid);
+	  				if(DEBUG8){printf("%d\n", __LINE__);}
+	while(curr != NULL){
+		if(DEBUG8){printf("%d\n", __LINE__);}
+	  	printf("%lu,", curr->tid);
+	  	if(DEBUG8){printf("%d\n", __LINE__);}
+	  	numThreads++;
+	  	curr = curr->next;
+	}
+	printf("\b \nTotal number of threads: %d\n\n", numThreads);
+	return (void *) node;
 }
 
 // function to go through all the files in currDir and call the sort on them
 // arg: curr directory to look through columnToSortOn from program input, master LL
-// ret: number of processes that came from this
-int parseFiles(char* currDir, char* columnToSortOn, movieLineLL* master){
+// ret: head of this files linked list
+threadMetaDataNode* parseFiles(char* currDir, char* columnToSortOn, movieLineLL* master){
 	DIR *dir;
   	struct dirent *entry;
-  	int numProcesses = 0;
+  	
+  	void* status;
+
+  	threadMetaDataNode* ret = NULL;
 
 	if(DEBUG4){ printf("%d %s\n", __LINE__, currDir); }
   	
@@ -890,19 +1120,58 @@ int parseFiles(char* currDir, char* columnToSortOn, movieLineLL* master){
 					
 				threadDriverStruct* args = malloc(sizeof(threadDriverStruct));
 				char* filePath = fileStringAppend(currDir, entry->d_name);
-				if(DEBUG4){ printf("CurrDir is %s for FilePath: %s for file: %s\n", currDir,filePath, entry->d_name); }
+				if(DEBUG6){ printf("CurrDir is %s for FilePath: %s for file: %s\n", currDir,filePath, entry->d_name); }
 
 
 				args->filePath = filePath;
 				args->master = master;
 				args->columnToSortOn = columnToSortOn;
-				void* status;
 				pthread_create(&tid, NULL, fileThreadDriver, (void *)args);
 
 				pthread_join(tid, &status);
 
-				numProcesses += *((int*)status);
-				printf("%lu,", tid);
+					
+				/*printf("Initial PID: %lu\n", curr->tid);
+					if(DEBUG8){printf("%d\n", __LINE__);}
+				int numThreads = 0;
+				printf("TIDS of all spawned threads: ");
+				  	if(DEBUG8){printf("%d\n", __LINE__);}
+				  	//threadsLL* currChildQueue = createThreadsChildQueue(curr->tid);
+				  	if(DEBUG8){printf("%d\n", __LINE__);}
+				while(curr != NULL){
+				  	printf("%lu,", curr->tid);
+				  	numThreads++;
+				  	curr = curr->next;
+				}
+				printf("\b \nTotal number of threads: %d\n", numThreads);*/
+
+
+
+				pthread_mutex_lock(&lock2);
+
+
+				threadMetaDataNode* thisNode = (threadMetaDataNode*)status;
+				if(DEBUG8) { if(thisNode->next != NULL){ printf("%s\n", "BIG PROBLEM!!!");}}
+
+				if(ret == NULL){
+					ret = (threadMetaDataNode*)status;
+				} else {
+					/*threadMetaDataNode* rear = thisNode;
+					while(rear->next != NULL){
+						rear = rear->next;
+					}
+					rear->next = ret;*/
+					thisNode->next = ret;
+					ret = thisNode;
+				}
+
+				pthread_mutex_unlock(&lock2);
+
+				//addImmediateChild(pthread_self(), tid);
+				//if(DEBUG6) { printf("%d\n", __LINE__);}
+				//numProcesses += (int)status;
+				//if(DEBUG6) { printf("%d\n", __LINE__);}
+				//if(DEBUG8){printf("%lu CurrDir is %s for FilePath: %s for file: %s\n,", tid, currDir,filePath, entry->d_name);}
 				free(filePath);
 				/*
 				pid = fork();
@@ -927,18 +1196,20 @@ int parseFiles(char* currDir, char* columnToSortOn, movieLineLL* master){
 		}
 		closedir(dir);
 	}
-	return numProcesses;
+	return ret;
 }
 
 
 // function to go through all the directories in currDir and call the subLevelDriver on them
 // arg: curr directory to look through, output directory to put sorted files in, pid (should be 0 on input?), columnToSortOn from
 // 	program input
-// ret: number of processes that came from this
-int parseDirectories(char* currDir, char* columnToSortOn, movieLineLL* master){
+// ret: head of this threads linked list
+threadMetaDataNode* parseDirectories(char* currDir, char* columnToSortOn, movieLineLL* master){
 	DIR *dir;
   	struct dirent *entry;
-  	int numProcesses = 0;
+  	void *status;
+
+  	threadMetaDataNode* ret = NULL;
 
 	// go through directories
 	if ((dir = opendir(currDir)) == NULL){
@@ -957,17 +1228,57 @@ int parseDirectories(char* currDir, char* columnToSortOn, movieLineLL* master){
 	  				pthread_t tid;
 	  				fflush(stdout);
 	  				threadDriverStruct* args = malloc(sizeof(threadDriverStruct));
-					args->filePath = directoryStringAppend(currDir, entry->d_name);
+	  				char* directoryPath = directoryStringAppend(currDir, entry->d_name);
+					args->filePath = directoryPath;
 					args->master = master;
 					args->columnToSortOn = columnToSortOn;
 
-					void *status;
+					if(DEBUG6){ printf("CurrDir is %s for DirectoryPath: %s", currDir,directoryPath); }
+					
 
 					pthread_create(&tid, NULL, directoryThreadDriver, (void *)args);
 
 					pthread_join(tid, &status);
-					printf("%lu,", tid);
-					numProcesses += *((int*)status);
+
+					// want to print the meta data for the status at this point
+
+					/*threadMetaDataNode* curr = (threadMetaDataNode*)status;
+					
+					printf("Initial PID: %lu\n", curr->tid);
+						if(DEBUG8){printf("%d\n", __LINE__);}
+					int numThreads = 0;
+					printf("TIDS of all spawned threads: ");
+					  	if(DEBUG8){printf("%d\n", __LINE__);}
+					  	//threadsLL* currChildQueue = createThreadsChildQueue(curr->tid);
+					  	if(DEBUG8){printf("%d\n", __LINE__);}
+					while(curr != NULL){
+					  	printf("%lu,", curr->tid);
+					  	numThreads++;
+					  	curr = curr->next;
+					}
+					printf("\b \nTotal number of threads: %d\n", numThreads);*/
+
+					pthread_mutex_lock(&lock2);
+
+					threadMetaDataNode* thisNode = (threadMetaDataNode*)status;
+					if(ret == NULL){
+						ret = (threadMetaDataNode*)status;
+					} else {
+						threadMetaDataNode* rear = thisNode;
+						while(rear->next != NULL){
+							rear = rear->next;
+						}
+						rear->next = ret;
+						ret = (threadMetaDataNode*)status;
+					}
+
+					pthread_mutex_unlock(&lock2);
+
+					//if(DEBUG6) { printf("%d\n", __LINE__);}
+					//addImmediateChild(pthread_self(), tid);
+
+					//if(DEBUG8){ printf("%lu CurrDir is %s for DirectoryPath: %s\n,", tid, currDir,directoryPath); } 
+					//numProcesses += (int)status;
 					/*pid = fork();
 					if(pid == 0){
 						char* subDir = directoryStringAppend(currDir, entry->d_name);
@@ -990,7 +1301,7 @@ int parseDirectories(char* currDir, char* columnToSortOn, movieLineLL* master){
 		closedir(dir);
 	}
 
-	return numProcesses;
+	return ret;
 }
 
 
@@ -998,11 +1309,18 @@ int parseDirectories(char* currDir, char* columnToSortOn, movieLineLL* master){
 // this is trypically called by each sub directory as well as the parent function
 // arg: current directory, output directory, pid, number of processes total, columnToSortOn from program input
 // ret: the number of processes
-int subLevelDriver(char* currDir, char* columnToSortOn, movieLineLL* master){
-	int numThreads = 1;
-	numThreads += parseFiles(currDir, columnToSortOn, master);
-  	numThreads += parseDirectories(currDir, columnToSortOn, master);
-	return numThreads;
+threadMetaDataNode* subLevelDriver(char* currDir, char* columnToSortOn, movieLineLL* master){
+	threadMetaDataNode* ret = parseFiles(currDir, columnToSortOn, master);
+	if(ret != NULL){
+		threadMetaDataNode* rear = ret;
+		while(rear->next != NULL){
+			rear= rear->next;
+		}
+		rear->next = parseDirectories(currDir, columnToSortOn, master);
+	} else {
+		ret = parseDirectories(currDir, columnToSortOn, master);
+	}
+	return ret;
 }
 
 
@@ -1014,7 +1332,6 @@ int main(int argc, char *argv[]){
     	// testing if we can see all directory and file names as well as subdirectories
     	//DIR *dir;
   		//struct dirent *entry;
-  		int numProcesses = 1;
   		char* columnToSortOn = NULL;
   		char* currDir = "./";
   		char* outputDir = "./";
@@ -1060,8 +1377,6 @@ int main(int argc, char *argv[]){
   			return 1;
   		}
 
-  		if(DEBUG3) {printf("%d\n", __LINE__);}
-  		if(DEBUG3) {printf("Curr Dir %s  output Dir %s\n", currDir, outputDir);}
 
 
   		if (pthread_mutex_init(&lock, NULL) != 0) { 
@@ -1069,8 +1384,13 @@ int main(int argc, char *argv[]){
         	return 1; 
     	} 
 
-
-
+/*
+    	allThreadsLL = malloc(sizeof(threadsLL));
+    	allThreadsLL->tid = pthread_self();
+    	allThreadsLL->head = NULL;
+    	allThreadsLL->rear = NULL;
+    	allThreadsLL->next = NULL;
+*/
 
     	char outputFileName[150];
 
@@ -1082,16 +1402,33 @@ int main(int argc, char *argv[]){
     	movieLineLL* master = malloc(sizeof(movieLineLL));
    		master->size = 0;
 
-  		printf("Initial PID: %d\n", getpid());
-  		printf("TIDS of all spawned threads: ");
+  		
   		fflush(stdout);
-  		numProcesses = subLevelDriver(currDir, columnToSortOn, master);
+
+  		threadMetaDataNode* final = subLevelDriver(currDir, columnToSortOn, master);
+
+  		threadMetaDataNode* curr = (threadMetaDataNode*)final;
+					
+		printf("Initial PID: %d\n", getpid());
+			if(DEBUG8){printf("%d\n", __LINE__);}
+		int numThreads = 0;
+		printf("TIDS of all spawned threads: ");
+		  	if(DEBUG8){printf("%d\n", __LINE__);}
+		  	//threadsLL* currChildQueue = createThreadsChildQueue(curr->tid);
+		  	if(DEBUG8){printf("%d\n", __LINE__);}
+		while(curr != NULL){
+		  	printf("%lu,", curr->tid);
+		  	numThreads++;
+		  	curr = curr->next;
+		}
+		
+		printf("\b \nTotal number of threads: %d\n", numThreads);
 
   		sortMovieLineLL(master, columnToSortOn);
   		printMoviesAsFullLineCsv(master, outputDir);
 
 
-  		printf("\b \nTotal number of threads: %d\n", numProcesses);
+		
 
         free(columnToSortOn);
     	//sortCsv(argv);
