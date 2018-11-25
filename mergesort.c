@@ -278,7 +278,7 @@ struct movieLine* merge(struct movieLine* x, struct movieLine* y, char *strInput
 
         if (strcmp(strInput, "color") == 0)
         {
-            if (x == NULL | strcmp(trim(x->color), trim(y->color)) <= 0)
+            if (x == NULL || strcmp(trim(x->color), trim(y->color)) <= 0)
             {
                 result = x;
                 result->next = merge(x->next, y, strInput, numInput);
@@ -289,7 +289,7 @@ struct movieLine* merge(struct movieLine* x, struct movieLine* y, char *strInput
             }
         }else if (strcmp(strInput, "director_name") == 0)
         {
-            if (x == NULL | strcmp(trim(x->director_name), trim(y->director_name)) <= 0)
+            if (x == NULL || strcmp(trim(x->director_name), trim(y->director_name)) <= 0)
             {
                 //printf("\n x bef: %s, y bef: %s.\t x aft: %s, y aft: %s.\t result: Smaller\n", x->director_name, y->director_name, trim(x->director_name), trim(y->director_name));
                 result = x;
@@ -302,7 +302,7 @@ struct movieLine* merge(struct movieLine* x, struct movieLine* y, char *strInput
             }
         }else if (strcmp(strInput, "actor_2_name") == 0)
         {
-            if (x == NULL | strcmp(trim(x->actor_2_name), trim(y->actor_2_name)) <= 0)
+            if (x == NULL || strcmp(trim(x->actor_2_name), trim(y->actor_2_name)) <= 0)
             {
                 result = x;
                 result->next = merge(x->next, y, strInput, numInput);
@@ -313,7 +313,7 @@ struct movieLine* merge(struct movieLine* x, struct movieLine* y, char *strInput
             }
         }else if (strcmp(strInput, "genres") == 0)
         {
-            if (x == NULL | strcmp(trim(x->genres), trim(y->genres)) <= 0)
+            if (x == NULL || strcmp(trim(x->genres), trim(y->genres)) <= 0)
             {
                 result = x;
                 result->next = merge(x->next, y, strInput, numInput);
@@ -324,7 +324,7 @@ struct movieLine* merge(struct movieLine* x, struct movieLine* y, char *strInput
             }
         }else if (strcmp(strInput, "actor_1_name") == 0)
         {
-            if (x == NULL | strcmp(trim(x->actor_1_name), trim(y->actor_1_name)) <= 0)
+            if (x == NULL || strcmp(trim(x->actor_1_name), trim(y->actor_1_name)) <= 0)
             {
                 result = x;
                 result->next = merge(x->next, y, strInput, numInput);
@@ -335,7 +335,7 @@ struct movieLine* merge(struct movieLine* x, struct movieLine* y, char *strInput
             }
         }else if (strcmp(strInput, "movie_title") == 0)
         {
-            if (x == NULL | strcmp(trim(x->movie_title), trim(y->movie_title)) <= 0)
+            if (x == NULL || strcmp(trim(x->movie_title), trim(y->movie_title)) <= 0)
             {
                 //printf("\n x bef: %s, y bef: %s.\t x aft: %s, y aft: %s.\t result: Smaller\n", x->movie_title, y->movie_title, trim(x->movie_title), trim(y->movie_title));
                 result = x;
@@ -348,7 +348,7 @@ struct movieLine* merge(struct movieLine* x, struct movieLine* y, char *strInput
             }
         }else if (strcmp(strInput, "actor_3_name") == 0)
         {
-            if (x == NULL | strcmp(trim(x->actor_3_name), trim(y->actor_3_name)) <= 0)
+            if (x == NULL || strcmp(trim(x->actor_3_name), trim(y->actor_3_name)) <= 0)
             {
                 result = x;
                 result->next = merge(x->next, y, strInput, numInput);
@@ -359,7 +359,7 @@ struct movieLine* merge(struct movieLine* x, struct movieLine* y, char *strInput
             }
         }else if (strcmp(strInput, "plot_keywords") == 0)
         {
-            if (x == NULL | strcmp(trim(x->plot_keywords), trim(y->plot_keywords)) <= 0)
+            if (x == NULL || strcmp(trim(x->plot_keywords), trim(y->plot_keywords)) <= 0)
             {
                 result = x;
                 result->next = merge(x->next, y, strInput, numInput);
@@ -370,7 +370,7 @@ struct movieLine* merge(struct movieLine* x, struct movieLine* y, char *strInput
             }
         }else if (strcmp(strInput, "movie_imdb_link") == 0)
         {
-            if (x == NULL | strcmp(trim(x->movie_imdb_link), trim(y->movie_imdb_link)) <= 0)
+            if (x == NULL || strcmp(trim(x->movie_imdb_link), trim(y->movie_imdb_link)) <= 0)
             {
                 result = x;
                 result->next = merge(x->next, y, strInput, numInput);
@@ -381,7 +381,7 @@ struct movieLine* merge(struct movieLine* x, struct movieLine* y, char *strInput
             }
         }else if (strcmp(strInput, "language") == 0)
         {
-            if (x == NULL | strcmp(trim(x->language), trim(y->language)) <= 0)
+            if (x == NULL || strcmp(trim(x->language), trim(y->language)) <= 0)
             {
                 result = x;
                 result->next = merge(x->next, y, strInput, numInput);
@@ -392,7 +392,7 @@ struct movieLine* merge(struct movieLine* x, struct movieLine* y, char *strInput
             }
         }else if (strcmp(strInput, "country") == 0)
         {
-            if (x == NULL | strcmp(trim(x->country), trim(y->country)) <= 0)
+            if (x == NULL || strcmp(trim(x->country), trim(y->country)) <= 0)
             {
                 result = x;
                 result->next = merge(x->next, y, strInput, numInput);
@@ -403,7 +403,7 @@ struct movieLine* merge(struct movieLine* x, struct movieLine* y, char *strInput
             }
         }else if (strcmp(strInput, "content_rating") == 0)
         {
-            if (x == NULL | strcmp(trim(x->content_rating), trim(y->content_rating)) <= 0)
+            if (x == NULL || strcmp(trim(x->content_rating), trim(y->content_rating)) <= 0)
             {
                 result = x;
                 result->next = merge(x->next, y, strInput, numInput);

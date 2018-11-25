@@ -11,7 +11,7 @@
 
 typedef enum { false, true } bool;
 
-const int DEBUG = 1;
+const int DEBUG = 0;
 const int DEBUG2 = 0;
 const int DEBUG3 = 0;
 const int DEBUG4 = 0;
@@ -190,7 +190,7 @@ int printMetaData(){
 // ret 0 if completed
 // this function intializes all the values for a movieline pointer
 int initMovieLine(movieLine* movie){
-	/*
+	
 	movie-> color = NULL;
 	movie-> director_name = NULL;
 	movie-> num_critic_for_reviews = -1;
@@ -222,7 +222,7 @@ int initMovieLine(movieLine* movie){
 	movie-> aspect_ratio_string = NULL;
 	movie-> movie_facebook_likes = -1;
 	movie->next = NULL;
-	movie->csvLine = NULL*/
+	movie->csvLine = NULL;/*
 	movie-> color = "";
 	movie-> director_name = "";
 	movie-> num_critic_for_reviews = -1;
@@ -253,8 +253,8 @@ int initMovieLine(movieLine* movie){
 	movie-> aspect_ratio = -1;
 	movie-> aspect_ratio_string = "";
 	movie-> movie_facebook_likes = -1;
-	movie->next = "";
-	movie->csvLine = "";
+	movie->next = NULL;
+	movie->csvLine = "";*/
 	return 0;
 }
 
@@ -511,7 +511,41 @@ int hasNoFields(movieLine* movie){
 		return 0;
 	} else{
 		return 1;
-	}
+	}/*
+	if(strcmp(movie->color,"") == 1 &&
+		strcmp(movie->director_name,"") == 1 &&
+		movie->num_critic_for_reviews == -1 &&
+		movie->duration == -1 &&
+		movie->director_facebook_likes == -1 &&
+		movie->actor_3_facebook_likes == -1 &&
+		strcmp(movie->actor_2_name,"") == 1 &&
+		movie->actor_1_facebook_likes == -1 &&
+		movie->gross == -1 &&
+		strcmp(movie->genres,"") == 1 &&
+		strcmp(movie->actor_1_name,"") == 1 &&
+		strcmp(movie->movie_title,"") == 1 &&
+		movie->num_voted_users == -1 &&
+		movie->cast_total_facebook_likes == -1 &&
+		strcmp(movie->actor_3_name,"") == 1 &&
+		movie->facenumber_in_poster == -1 &&
+		strcmp(movie->plot_keywords,"") == 1 &&
+		strcmp(movie->movie_imdb_link,"") == 1 &&
+		movie->num_user_for_reviews == -1 &&
+		strcmp(movie->language,"") == 1 &&
+		strcmp(movie->country,"") == 1 &&
+		strcmp(movie->content_rating,"") == 1 &&
+		movie->budget == -1 &&
+		movie->title_year == -1 &&
+		movie->actor_2_facebook_likes == -1 &&
+		movie->imdb_score == -1 &&
+		movie->aspect_ratio == -1 &&
+		movie->movie_facebook_likes == -1 &&
+		movie->next == NULL &&
+		strcmp(movie->csvLine,"") == 1){
+		return 0;
+	} else{
+		return 1;
+	}*/
 }
 
 /* arg: column number, array of column headers, movie line pointer, string to add at that column
