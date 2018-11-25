@@ -6,10 +6,9 @@
 const int DEBUG7 = 0;
 
 //this function removes the leading and trailing spaces of string type inputs
-char *trim(char *input)
+char *trim(char *str)
 {
-    char* str = malloc(sizeof(char) * ((strlen(input) + 1)));
-    strcpy(str,input);
+    
     int index = 0, i = 0, counter = 0;
 
     while (str[index] == ' ' || str[index] == '\n' || str[index] == '\t' || str[index] == '"')
@@ -27,7 +26,7 @@ char *trim(char *input)
     i = 0, index = -1;
     while (str[i] != '\0')
     {
-        if (str[i] == ' ' || str[i] == '\n' || str[i] == '\t')
+        if (str[i] == ' ' || str[i] == '\n' || str[i] == '\t' || str[index] == '"')
         {
             index = i;
             counter++;
@@ -456,11 +455,24 @@ void mergeSort(struct movieLine** ptrHead, char *strInput, char *numInput)
     struct movieLine* x;
     struct movieLine* y;
 
-    if (head == NULL || head->next == NULL)     //base case for recursive call
+    if (DEBUG7){ printf("%d mergesort\n", __LINE__); }
+
+    /*if (head == NULL || head->next == NULL)     //base case for recursive call
     {
         return;
+    }*/
+    if(head == NULL){
+        return;
     }
+
+    if (DEBUG7){ printf("%d mergesort\n", __LINE__); }
+    if(head->next == NULL){
+        return;
+    }
+    if (DEBUG7){ printf("%d mergesort\n", __LINE__); }
     split(head, &x, &y);
+
+    if (DEBUG7){ printf("%d mergesort\n", __LINE__); }
 
     mergeSort(&x, strInput, numInput);      //recursive call on mergeSort for each parts
     mergeSort(&y, strInput, numInput);

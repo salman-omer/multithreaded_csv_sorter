@@ -11,7 +11,7 @@
 
 typedef enum { false, true } bool;
 
-const int DEBUG = 0;
+const int DEBUG = 1;
 const int DEBUG2 = 0;
 const int DEBUG3 = 0;
 const int DEBUG4 = 0;
@@ -21,7 +21,6 @@ const int DEBUG8 = 0;
 
 pthread_mutex_t lock; 
 pthread_mutex_t lock2;
-
 
 /*
 struct threadsLL* allThreadsLL;
@@ -191,6 +190,7 @@ int printMetaData(){
 // ret 0 if completed
 // this function intializes all the values for a movieline pointer
 int initMovieLine(movieLine* movie){
+	/*
 	movie-> color = NULL;
 	movie-> director_name = NULL;
 	movie-> num_critic_for_reviews = -1;
@@ -222,7 +222,39 @@ int initMovieLine(movieLine* movie){
 	movie-> aspect_ratio_string = NULL;
 	movie-> movie_facebook_likes = -1;
 	movie->next = NULL;
-	movie->csvLine = NULL;
+	movie->csvLine = NULL*/
+	movie-> color = "";
+	movie-> director_name = "";
+	movie-> num_critic_for_reviews = -1;
+	movie-> duration = -1;
+	movie-> director_facebook_likes = -1;
+	movie-> actor_3_facebook_likes = -1;
+	movie-> actor_2_name = "";
+	movie-> actor_1_facebook_likes = -1;
+	movie-> gross = -1;
+	movie-> genres = "";
+	movie-> actor_1_name = "";
+	movie-> movie_title = "";
+	movie-> num_voted_users = -1;
+	movie-> cast_total_facebook_likes = -1;
+	movie-> actor_3_name = "";
+	movie-> facenumber_in_poster = -1;
+	movie-> plot_keywords = "";
+	movie-> movie_imdb_link = "";
+	movie-> num_user_for_reviews = -1;
+	movie-> language = "";
+	movie-> country = "";
+	movie-> content_rating = "";
+	movie-> budget = -1;
+	movie-> title_year = -1;
+	movie-> actor_2_facebook_likes = -1;
+	movie-> imdb_score = -1;
+	movie-> imdb_score_string = "";
+	movie-> aspect_ratio = -1;
+	movie-> aspect_ratio_string = "";
+	movie-> movie_facebook_likes = -1;
+	movie->next = "";
+	movie->csvLine = "";
 	return 0;
 }
 
@@ -367,12 +399,12 @@ int sortMovieLineLL(movieLineLL* moviesLL, char* columnToSortOn){
 	if ((strcmp(columnToSortOn, "color") == 0) || (strcmp(columnToSortOn, "director_name") == 0) || (strcmp(columnToSortOn, "actor_2_name") == 0) || (strcmp(columnToSortOn, "genres") == 0) || (strcmp(columnToSortOn, "actor_1_name") == 0) || (strcmp(columnToSortOn, "movie_title") == 0) || (strcmp(columnToSortOn, "actor_3_name") == 0) || (strcmp(columnToSortOn, "plot_keywords") == 0) || (strcmp(columnToSortOn, "movie_imdb_link") == 0) || (strcmp(columnToSortOn, "language") == 0) || (strcmp(columnToSortOn, "country") == 0) || (strcmp(columnToSortOn, "content_rating") == 0))
     {
     	if(moviesLL == NULL){
-    		if(DEBUG6) {printf("%d\n", __LINE__);}
+    		if(DEBUG8) {printf("%d\n", __LINE__);}
     	}
-  		if(DEBUG6) {printf("%d\n", __LINE__);}
+  		if(DEBUG8) {printf("%d\n", __LINE__);}
 		mergeSort(&(moviesLL->head), columnToSortOn, NULL);
 
-  		if(DEBUG6) {printf("%d\n", __LINE__);}
+  		if(DEBUG8) {printf("%d\n", __LINE__);}
 
     }else if ((strcmp(columnToSortOn, "num_critic_for_reviews") == 0) || (strcmp(columnToSortOn, "duration") == 0) || (strcmp(columnToSortOn, "director_facebook_likes") == 0) || (strcmp(columnToSortOn, "actor_3_facebook_likes") == 0) || (strcmp(columnToSortOn, "actor_1_facebook_likes") == 0) || (strcmp(columnToSortOn, "gross") == 0) || (strcmp(columnToSortOn, "num_voted_users") == 0) || (strcmp(columnToSortOn, "cast_total_facebook_likes") == 0) || (strcmp(columnToSortOn, "facenumber_in_poster") == 0) || (strcmp(columnToSortOn, "num_user_for_reviews") == 0) || (strcmp(columnToSortOn, "budget") == 0) || (strcmp(columnToSortOn, "title_year") == 0) || (strcmp(columnToSortOn, "actor_2_facebook_likes") == 0) || (strcmp(columnToSortOn, "imdb_score") == 0) || (strcmp(columnToSortOn, "aspect_ratio") == 0) || (strcmp(columnToSortOn, "movie_facebook_likes") == 0))
     {
@@ -1115,7 +1147,7 @@ threadMetaDataNode* parseFiles(char* currDir, char* columnToSortOn, movieLineLL*
     		perror("opendir() error");
 	}
 	else {
-		if(DEBUG){ puts("Files:"); }
+		if(DEBUG4){ puts("Files:"); }
 		while ((entry = readdir(dir)) != NULL){
 
 			// entry is a file
@@ -1454,11 +1486,13 @@ int main(int argc, char *argv[]){
 		
 		printf("\b \nTotal number of threads: %d\n", numThreads);
 
+		if(DEBUG8){printf("%d\n", __LINE__);}
   		sortMovieLineLL(master, columnToSortOn);
+  		if(DEBUG8){printf("%d\n", __LINE__);}
   		printMoviesAsFullLineCsv(master, outputDir);
 
 
-		
+		if(DEBUG8){printf("%d\n", __LINE__);}
 
         free(columnToSortOn);
     	//sortCsv(argv);
