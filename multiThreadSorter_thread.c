@@ -14,6 +14,7 @@ const int DEBUG2 = 0;
 const int DEBUG3 = 0;
 const int DEBUG4 = 0;
 const int DEBUG5 = 0;
+const int DEBUG6 = 1;
 
 pthread_mutex_t lock;
 
@@ -116,9 +117,9 @@ int appendLinkedList(movieLineLL* original, movieLineLL *other){
 // remove all "-1" from input string and replace with nothing
 char* removeNegativeOnes(char* str){
 	char* ret = malloc(sizeof(char) * (strlen(str) + 1));
-	int i = 0;
+	int i;
 	int j = 0;
-	for(i; i < strlen(str) + 1; i++){
+	for(i = 0; i < strlen(str) + 1; i++){
 		if(str[i] == '\0'){
 			break;
 		}
@@ -170,6 +171,8 @@ char* constructCSVLine(movieLine* m){
 		m->aspect_ratio,
 		m->movie_facebook_likes);
 
+	//if(DEBUG6){ printf("Movie title:   %s\n", m->movie_title);}
+
 	return string;
 }
 
@@ -189,8 +192,6 @@ int sortMovieLineLL(movieLineLL* moviesLL, char* columnToSortOn){
 }
 
 int printMoviesAsFullLineCsv(movieLineLL* moviesLL, char* filePath){
-	int i;
-
 	FILE *fp = fopen(filePath, "w");
 
 
@@ -236,7 +237,9 @@ int printMoviesAsFullLineCsv(movieLineLL* moviesLL, char* filePath){
 	movieLine* curr = moviesLL->head;
 	while(curr != NULL){
 		counter++;
+
 		fprintf(fp, "%s\n", removeNegativeOnes(constructCSVLine(curr)));
+
 		curr = curr->next;
 	}
 
@@ -532,7 +535,7 @@ movieLineLL* sortCsv(char* columnToSortOn, char* filePath){
 
 	//Check if file is already sorted
 	if(strstr(filePath, "-sorted-") != NULL){
-		return 1;
+		return NULL;
 	}
 
 
@@ -540,7 +543,7 @@ movieLineLL* sortCsv(char* columnToSortOn, char* filePath){
 	if(isCSV(filePath) != 0){
 		if(DEBUG){ printf("%s is NOT a csv\n", filePath); }
 		fprintf(stderr, "%s is NOT a csv\n", filePath);
-		return 1;
+		return NULL;
 	} else {
 		if(DEBUG4){ printf("%s IS a csv\n", filePath); }
 	}
@@ -549,7 +552,7 @@ movieLineLL* sortCsv(char* columnToSortOn, char* filePath){
 
 	FILE* file = fopen(filePath, "r");
 
-	if(DEBUG4){ printf("%d %d %s\n", __LINE__, file, filePath); }
+	if(DEBUG4){ printf("%d %s\n", __LINE__, filePath); }
 
 	int fd = fileno(file);
 
@@ -642,7 +645,7 @@ movieLineLL* sortCsv(char* columnToSortOn, char* filePath){
     //make a new struct, make previous struct point to it, populate it
     if(DEBUG4){ printf("%d\n", __LINE__); }
 
-    char currCellText[100];
+    char currCellText[200];
     int currCellTextIndex = 0;
     int cellNumber = 0;
     if(DEBUG2){ printf("Line %d\n", __LINE__);}
@@ -659,16 +662,21 @@ movieLineLL* sortCsv(char* columnToSortOn, char* filePath){
     while(read(fd, &buffer, 1) != 0){
     	if(cellNumber >= numColumns){
     		write(2, "ERROR: more data than allowed columns, aborting\n", 49);
-    		return 1;
+    		return NULL;
     	}
         if(buffer == '"'){
-            quotationMark = !quotationMark;
+        	if(quotationMark == true){
+        		quotationMark = false;
+        	} else {
+        		quotationMark = true;
+        	}
+
             /* This is some old stuff that I am commenting out so that the quotes are stored in the strings
             individualMovieLine[movieLineCharacterIndex] = buffer;
             movieLineCharacterIndex++;
             continue;*/
         }
-        if (buffer == ',' && !quotationMark)
+        if (buffer == ',' && (quotationMark == false))
         {
             individualMovieLine[movieLineCharacterIndex] = buffer;
             movieLineCharacterIndex++;
@@ -846,13 +854,13 @@ void* fileThreadDriver(void *args){
 	threadDriverStruct* argsStruct= (threadDriverStruct*)args;
 	movieLineLL* temp = sortCsv(argsStruct->columnToSortOn, argsStruct->filePath);
 	appendLinkedList(argsStruct->master, temp);
-	return;
+	return (void*) 1;
 }
 
 void* directoryThreadDriver(void* args){
 	threadDriverStruct* argsStruct= (threadDriverStruct*)args;
-	subLevelDriver(argsStruct->filePath, argsStruct->columnToSortOn, argsStruct->master);
-	return;
+	int* ret = subLevelDriver(argsStruct->filePath, argsStruct->columnToSortOn, argsStruct->master)
+	return (void *) ret;
 }
 
 // function to go through all the files in currDir and call the sort on them
@@ -888,11 +896,13 @@ int parseFiles(char* currDir, char* columnToSortOn, movieLineLL* master){
 				args->filePath = filePath;
 				args->master = master;
 				args->columnToSortOn = columnToSortOn;
+				void* status;
 				pthread_create(&tid, NULL, fileThreadDriver, (void *)args);
 
-				pthread_join(tid, NULL);
+				pthread_join(tid, &status);
 
-
+				numProcesses += *((int*)status);
+				printf("%lu,", tid);
 				free(filePath);
 				/*
 				pid = fork();
@@ -950,9 +960,14 @@ int parseDirectories(char* currDir, char* columnToSortOn, movieLineLL* master){
 					args->filePath = directoryStringAppend(currDir, entry->d_name);
 					args->master = master;
 					args->columnToSortOn = columnToSortOn;
+
+					void *status;
+
 					pthread_create(&tid, NULL, directoryThreadDriver, (void *)args);
 
-					pthread_join(tid, NULL);
+					pthread_join(tid, &status);
+					printf("%lu,", tid);
+					numProcesses += *((int*)status);
 					/*pid = fork();
 					if(pid == 0){
 						char* subDir = directoryStringAppend(currDir, entry->d_name);
@@ -984,9 +999,10 @@ int parseDirectories(char* currDir, char* columnToSortOn, movieLineLL* master){
 // arg: current directory, output directory, pid, number of processes total, columnToSortOn from program input
 // ret: the number of processes
 int subLevelDriver(char* currDir, char* columnToSortOn, movieLineLL* master){
-	parseFiles(currDir, columnToSortOn, master);
-  	parseDirectories(currDir, columnToSortOn, master);
-	return 1;
+	int numThreads = 1;
+	numThreads += parseFiles(currDir, columnToSortOn, master);
+  	numThreads += parseDirectories(currDir, columnToSortOn, master);
+	return numThreads;
 }
 
 
@@ -1067,7 +1083,7 @@ int main(int argc, char *argv[]){
    		master->size = 0;
 
   		printf("Initial PID: %d\n", getpid());
-  		printf("PIDS of all child processes: ");
+  		printf("TIDS of all spawned threads: ");
   		fflush(stdout);
   		numProcesses = subLevelDriver(currDir, columnToSortOn, master);
 
@@ -1075,7 +1091,7 @@ int main(int argc, char *argv[]){
   		printMoviesAsFullLineCsv(master, outputDir);
 
 
-  		printf("\b \nTotal number of processes: %d\n", numProcesses);
+  		printf("\b \nTotal number of threads: %d\n", numProcesses);
 
         free(columnToSortOn);
     	//sortCsv(argv);

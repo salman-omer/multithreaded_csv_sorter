@@ -4,11 +4,13 @@
 #include "multiThreadSorter_thread.h"
 
 //this function removes the leading and trailing spaces of string type inputs
-char *trim(char *str)
+char *trim(char *input)
 {
+    char* str = malloc(sizeof(char) * ((strlen(input) + 1)));
+    strcpy(str,input);
     int index = 0, i = 0, counter = 0;
 
-    while (str[index] == ' ' || str[index] == '\n' || str[index] == '\t')
+    while (str[index] == ' ' || str[index] == '\n' || str[index] == '\t' || str[index] == '"')
     {
         index++;
     }
