@@ -6,8 +6,10 @@
 const int DEBUG7 = 0;
 
 //this function removes the leading and trailing spaces of string type inputs
-char *trim(char *str)
+char *trim(char *input)
 {
+    char* str = malloc(sizeof(char) * (strlen(input) + 1));
+    strcpy(str,input);
     if (str == NULL)
     {
         return "";
