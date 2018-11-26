@@ -8,8 +8,17 @@ const int DEBUG7 = 0;
 //this function removes the leading and trailing spaces of string type inputs
 char *trim(char *input)
 {
-    char* str = malloc(sizeof(char) * (strlen(input) + 1));
-    strcpy(str,input);
+    if(DEBUG7){printf("%d\n", __LINE__);}
+    char* str = NULL; 
+    if(DEBUG7){printf("%d\n", __LINE__);}
+    if(input != NULL){
+        str = malloc(sizeof(char) * (strlen(input) + 1));
+        if(DEBUG7){printf("%d\n", __LINE__);}
+        strcpy(str,input);
+        if(DEBUG7){printf("%d\n", __LINE__);}
+    }
+    if(DEBUG7){printf("%d\n", __LINE__);}
+
     if (str == NULL)
     {
         return "";
