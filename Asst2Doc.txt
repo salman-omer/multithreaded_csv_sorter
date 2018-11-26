@@ -1,0 +1,59 @@
+Design:
+This program is meant to work with the movie_metadata.csv that was provided in the project description. As such, it specifically takes in the columns that are provided in the csv and in the project description such as direct_name, actor_facebook_likes etc.
+
+To recap, the program uses a movieLine structure which acts as nodes in a linked list to store the data. These nodes have all the possible data values precoded as possible variables for csv line. First, the column headers line in csv is read and stored in the columnNames array which is allocated memory dynamically. Then, each line of the csv is read one after another. While a line is being read, a correspoding movieLine struct has its fields updated with the appropriate values. The struct itself stores the data with all corresponding whitespace attached as seen in the original csv file. This is all kept track of in a movieLinesLL struct which keeps track of the head of the linked list and the total size. The fact that it keeps track of the head helps out later when we do the merge sort.
+
+The merge sort is programmed to work on two different data types, strings and numbers. Both ints and doubles are represented as doubles for the purpose of the merge sort. This program does a traditional merge sort on a linked list by sorting the objects in ascending order through a recursive algorithm. The merge sort keep track of the head object in the original linked list so that it can be accessed later. Since we used merge sort, it takes at most O(n log n) time to sort csv file with any size.
+
+Finally, the linked list is printed out in its entirety. First, the line with the column headers is printed out. Next, the corresponding csvline is printed out for each of the movieLine structs. These structs also happen to have a field csvLine. This is  a field that saves the csvLine exactly as it appeared in the original csv. This is not a data type that can be sorted on, but it makes it easier to print out the sorted csv in the end.
+
+For our new multiThreadSorter_thread.c, we kept all the error checking parts from previous code to ensure that the user is inputting valid inputs. Then we added input arguments so user can input -d and -o flags to specify directory and output directories respectively. Then we created functions to go through all the files and subdirectories + sublevels inside subdirectories to find all the valid csv files by making a new thread on each new files and new directories. For making a new thread, if it is a valid csv file, we sort and output to appropriate output directory and if it is not a valid csv file, we output error message to stderr/command line. At the end, our program will print out initial PID, TIDS of all spawned threads, and total number of threads to stdout successfully and terminate after freeing all malloced memories, closing directories, and finish running all threads.
+
+
+
+Assumptions:
+For the csv file, we assume that the column headers and their corresponding data types are as given in the project description. In order to not make this assumption, we would need to be given another meta data file with a list of column names and data types corresponding to those column names.
+For the multiThreadSorter_thread.c, we assumed that -c, -o, or -d flag can appear anywhere but should only appear at most once so we made our program print error if there are any duplicate flags.
+
+
+
+
+Difficulties:
+For this assignment we had some major difficulties with making sure it sorts properly when sorting on multiple files with column names that only some of the csv files have. And it kept segfaulting every time this case occurred. Also there was weird bugs when we were sorting on movie_title headings where some inputs with comma in between quotation marks around the movie titles would split up into two pieces for some reason and end up messing up the column next to it.
+
+
+
+
+Testing procedures:
+We first tested that our sorting csv file function still works properly. We tested by creating a smaller csv file and then sorting on that. In this way we were able to check by eye if things were occurring the way we meant them to. After ironing out all the bugs in the small testing csv, we moved to the larger file and debugged our program to work with that file in its entirety.
+We created 4 test files:
+1. test.csv which was used to test our program with small inputs.
+2. test1.csv which was used to test if it works well with less inputs and less column names.
+3. test2.csv + test3.csv which was used to test if it works properly with subsets of column names rather than full set of column names as given. + check if its working properly with string inputs that have trailing and leading spaces when comparing.
+4. test4.csv which has few empty inputs to test if those empty ones are getting sorted properly.
+5. test6.csv for subsets of column names but with movie_titles that have a mix of both letters and numbers.
+6. test7.csv for subsets of column names but with really long movie_titles.
+4. test10.csv which was used to test if the program doesn't break with seg fault error for case where there is more columns than headings.
+5. movie_metadata.csv was used at the end to test that our program works for what is intended to do.
+We believe that we tested pretty much all the possible edge cases there can be to test our program.
+After making sure, it works properly with valid csv files, we moved onto creating folders/directories, subdirectories with valid csv files and subdirectories with invalid csv files. After doing so, we saw that our program worked as expected for all the possible cases of combinations of -c, -d, and -o flags and arguments.
+We also made a test directories, called Level0Sub0, where we created subdirectories and files and tested that it works for any sublevels or directories.
+We even tested invalid command line prompts such as cases with too many or too little input arguments, non-existing directory paths, non-valid column name and etc. and it has worked as expected for all of these edge cases.
+
+
+
+How to use our code:
+Use our code using the procedure given in the project description document. This is using ./scannerCSVsorter -c "columnName" which works similarly as to our first assignment but goes through all the directories and sort them using mergesort and output the sorted file in the same directory as where the initial csv file was found.
+./scannerCSVsorter -c "columnName" -d "directory" sorts csv files that are in the specified directory and outputs to the same directory where the unsorted csv file is.
+./scannerCSVsorter -c "columnName" -o "output directory" sorts all the csv files in current directory and outputs the sorted csv files to the specified output directory.
+./scannerCSVsorter -c "columnName" -d "directory" -o "output directory" (place-independent) looks for csv files at specified directory and outputs all sorted csv files at the specified output directory.
+* To create the scannerCSVsorter, simple type 'make'. When you are done using the program, simply type 'make clean' to remove scannerCSVsorter file and mergesort.o file.
+**Note: Parameters must be followed by respective -c, -d, or -o flag. Else the program will print out fatal error and exit the program. -c Flag is a must!
+
+
+
+
+Contents of Header file and why we needed it:
+In the header file, we defined one struct to take in and store all the possible column names & their corresponding values (+ pointer to next node member) and one struct to create a linked list of the previous structs which keeps track of the head, last node, and size of the linked list. Mergesort function is also included in the header file which takes in a struct and column name depending on its type; whether the input type is number or string.
+We needed to include the structs in the header file as they were necessary for our mergesort.c file to access the struct members and to sort based on their value. Similarly, we needed to include mergeSort function in the header file as it is declared in mergesort.c file but called in simpleCSVsorter.c file to merge sort based on the given column name in O(n log n) time.
+

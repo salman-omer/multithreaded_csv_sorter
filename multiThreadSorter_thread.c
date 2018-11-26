@@ -1436,6 +1436,15 @@ int main(int argc, char *argv[]){
   					return 1;
   				}
   				c = true;
+
+				//check if valid column name
+				if (!(strcmp(argv[i+1], "color") == 0) && !(strcmp(argv[i+1], "director_name") == 0) && !(strcmp(argv[i+1], "num_critic_for_reviews") == 0) && !(strcmp(argv[i+1], "duration") == 0) && !(strcmp(argv[i+1], "director_facebook_likes") == 0) && !(strcmp(argv[i+1], "actor_3_facebook_likes") == 0) && !(strcmp(argv[i+1], "actor_2_name") == 0) && !(strcmp(argv[i+1], "actor_1_facebook_likes") == 0) && !(strcmp(argv[i+1], "gross") == 0) && !(strcmp(argv[i+1], "genres") == 0) && !(strcmp(argv[i+1], "actor_1_name") == 0) && !(strcmp(argv[i+1], "movie_title") == 0) && !(strcmp(argv[i+1], "num_voted_users") == 0) && !(strcmp(argv[i+1], "cast_total_facebook_likes") == 0) && !(strcmp(argv[i+1], "actor_3_name") == 0) && !(strcmp(argv[i+1], "facenumber_in_poster") == 0) && !(strcmp(argv[i+1], "plot_keywords") == 0) && !(strcmp(argv[i+1], "movie_imdb_link") == 0) && !(strcmp(argv[i+1], "num_user_for_reviews") == 0) && !(strcmp(argv[i+1], "language") == 0) && !(strcmp(argv[i+1], "country") == 0) && !(strcmp(argv[i+1], "content_rating") == 0) && !(strcmp(argv[i+1], "budget") == 0) && !(strcmp(argv[i+1], "title_year") == 0) && !(strcmp(argv[i+1], "actor_2_facebook_likes") == 0) && !(strcmp(argv[i+1], "imdb_score") == 0) && !(strcmp(argv[i+1], "aspect_ratio") == 0) && !(strcmp(argv[i+1], "movie_facebook_likes") == 0))
+				{
+					printf("FATAL ERROR: INVALID COLUMN NAME\n");
+  					write(2, "FATAL ERROR: INVALID COLUMN NAME\n", 45);
+					return 1;
+				}
+
   				columnToSortOn = malloc(sizeof(char) * (strlen(argv[i+1]) + 1));
   				strcpy(columnToSortOn, argv[i+1]);
   				if(DEBUG3){printf("%s\n", columnToSortOn);};
