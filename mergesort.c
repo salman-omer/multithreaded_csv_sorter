@@ -30,7 +30,7 @@ char *trim(char *str)
     i = 0, index = -1;
     while (str[i] != '\0')
     {
-        if (str[i] == ' ' || str[i] == '\n' || str[i] == '\t' || str[index] == '"')
+        if (str[i] == ' ' || str[i] == '\n' || str[i] == '\t')
         {
             index = i;
             counter++;
