@@ -33,21 +33,22 @@ We created 4 test files:
 4. test4.csv which has few empty inputs to test if those empty ones are getting sorted properly.
 5. test6.csv for subsets of column names but with movie_titles that have a mix of both letters and numbers.
 6. test7.csv for subsets of column names but with really long movie_titles.
-4. test10.csv which was used to test if the program doesn't break with seg fault error for case where there is more columns than headings.
-5. movie_metadata.csv was used at the end to test that our program works for what is intended to do.
+7. test10.csv which was used to test if the program doesn't break with seg fault error for case where there is more columns than headings.
+8. test11.csv which was used to test if our program works with only one column which has movie titles with comma in between the quotation marks.
+9. x1-1000, x1001-2000, etc that were broken into smaller parts from the given movie_metadata.csv.
+10. movie_metadata.csv was used at the end to test that our program works for what is intended to do.
 We believe that we tested pretty much all the possible edge cases there can be to test our program.
 After making sure, it works properly with valid csv files, we moved onto creating folders/directories, subdirectories with valid csv files and subdirectories with invalid csv files. After doing so, we saw that our program worked as expected for all the possible cases of combinations of -c, -d, and -o flags and arguments.
-We also made a test directories, called Level0Sub0, where we created subdirectories and files and tested that it works for any sublevels or directories.
 We even tested invalid command line prompts such as cases with too many or too little input arguments, non-existing directory paths, non-valid column name and etc. and it has worked as expected for all of these edge cases.
 
 
 
 How to use our code:
-Use our code using the procedure given in the project description document. This is using ./scannerCSVsorter -c "columnName" which works similarly as to our first assignment but goes through all the directories and sort them using mergesort and output the sorted file in the same directory as where the initial csv file was found.
-./scannerCSVsorter -c "columnName" -d "directory" sorts csv files that are in the specified directory and outputs to the same directory where the unsorted csv file is.
-./scannerCSVsorter -c "columnName" -o "output directory" sorts all the csv files in current directory and outputs the sorted csv files to the specified output directory.
-./scannerCSVsorter -c "columnName" -d "directory" -o "output directory" (place-independent) looks for csv files at specified directory and outputs all sorted csv files at the specified output directory.
-* To create the scannerCSVsorter, simple type 'make'. When you are done using the program, simply type 'make clean' to remove scannerCSVsorter file and mergesort.o file.
+Use our code using the procedure given in the project description document. This is using ./multiThreadSorter -c "columnName" which works similarly as to our first & second assignment but goes through all the directories and sort them using mergesort and output the sorted file in the same directory as where the initial csv file was found as one single file.
+./multiThreadSorter -c "columnName" -d "directory" sorts csv files that are in the specified directory and outputs to the same directory where the unsorted csv files are.
+./multiThreadSorter -c "columnName" -o "output directory" sorts all the csv files in current directory and outputs the sorted csv files to the specified output directory.
+./multiThreadSorter -c "columnName" -d "directory" -o "output directory" (place-independent) looks for csv files at specified directory and outputs all sorted csv files at the specified output directory.
+* To create the multiThreadSorter, simple type 'make'. When you are done using the program, simply type 'make clean' to remove multiThreadSorter file and mergesort.o file.
 **Note: Parameters must be followed by respective -c, -d, or -o flag. Else the program will print out fatal error and exit the program. -c Flag is a must!
 
 
@@ -55,5 +56,6 @@ Use our code using the procedure given in the project description document. This
 
 Contents of Header file and why we needed it:
 In the header file, we defined one struct to take in and store all the possible column names & their corresponding values (+ pointer to next node member) and one struct to create a linked list of the previous structs which keeps track of the head, last node, and size of the linked list. Mergesort function is also included in the header file which takes in a struct and column name depending on its type; whether the input type is number or string.
-We needed to include the structs in the header file as they were necessary for our mergesort.c file to access the struct members and to sort based on their value. Similarly, we needed to include mergeSort function in the header file as it is declared in mergesort.c file but called in simpleCSVsorter.c file to merge sort based on the given column name in O(n log n) time.
+We needed to include the structs in the header file as they were necessary for our mergesort.c file to access the struct members and to sort based on their value. Similarly, we needed to include mergeSort function in the header file as it is declared in mergesort.c file but called in multiThreadSorter_thread.c file to merge sort based on the given column name in O(n log n) time.
+Also for this assignment, we also created new structs that create linked list of all the thread IDs that are involved in sorted the csv files.
 
